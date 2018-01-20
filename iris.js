@@ -8,7 +8,6 @@ bot.on('ready', () => {
 });
 
 bot.on('message', message => {
-    //let mess = message.content.toLower
     if(message.content.toLowerCase().includes('thanks, iris') || message.content.toLowerCase().includes('thanks iris')) {
         let author = message.author;
         message.channel.send(`You're welcome, ${author}`);
