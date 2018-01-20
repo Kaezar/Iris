@@ -1,0 +1,15 @@
+{
+  "name": "iris",
+  "version": "1.0.0",
+  "description": "My own Discord bot",
+  "main": "iris.js",
+  "author": "Kyle Drum",
+  "dependencies": {
+    "bufferutil": "^3.0.3",
+    "discord.js": "git+https://github.com/discordjs/discord.js.git",
+    "erlpack": "github:hammerandchisel/erlpack",
+    "ffmpeg-binaries": "^3.2.2-3",
+    "libsodium-wrappers": "^0.7.3",
+    "node-opus": "^0.2.7"
+  }
+}
