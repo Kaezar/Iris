@@ -1,4 +1,5 @@
 const Discord = require("discord.js");
+const ytdl = require("ytdl-core");
 const bot = new Discord.Client();
 const auth = require("./auth.json");
 const token = auth.token;
@@ -6,14 +7,24 @@ const token = auth.token;
 bot.on('ready', () => {
     console.log('I am ready!');
 });
-
+// message event handler
 bot.on('message', message => {
-    if(message.content.toLowerCase().includes('thanks, iris') || message.content.toLowerCase().includes('thanks iris')) {
-        let author = message.author;
+
+    let author = message.author;
+
+    let mess = message.content.toLowerCase();
+
+    // politeness
+    if(mess.includes('thanks, iris') || mess.includes('thanks iris') || mess.includes('thank you, iris') || mess.includes('thank you, iris')) {
         message.channel.send(`You're welcome, ${author}`);
-    }
+    } // if
 
+    // greeting
+    if(mess.includes('hello, iris') || mess.includes('hello iris')) {
+        message.channel.send(`Hello ${author}`);
+    } // if
 
+    // commands
     if (message.content.substring(0,1) == "!") {
         var args = message.content.substring(1).split(' ');
         var cmd = args[0];
@@ -37,6 +48,7 @@ bot.on('message', message => {
                 }
                 if (!isNaN(dice[0]) && !isNaN(dice[1]) && dice.length == 2){
                     var result = rollDice(dice[0],dice[1]);
+                    var critCheck = result;
                     
                     if(!isNaN(mod)){
                         result = parseInt(result);
@@ -44,6 +56,10 @@ bot.on('message', message => {
                         result = result + mod;
                     }
                     message.channel.send(result);
+                    if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
+                        const nat20 = bot.emojis.find('name', 'nat20');
+                        message.channel.send(`Natural 20! ${nat20}`);
+                    }
                 } else {
                     message.channel.send("Not a valid dice roll.");
                 }
@@ -54,9 +70,67 @@ bot.on('message', message => {
             case "rocks":
             message.channel.send("Rocks fall. Everyone dies.");
             break;
-        }
-    }
-});
+
+            case "playfile":
+            if (!message.guild) break;
+            if (args[0] != null) {
+                play(message, args[0]);
+            } else {
+                message.reply("Specify a file to play.");
+            }
+            break;
+
+            case "play":
+            const voiceChannel = message.member.voiceChannel;
+            if (args[0] != null) {
+                if (voiceChannel) {
+                    voiceChannel.join()
+                        .then(connection => {
+                            let url = String(args[0]);
+                            const stream = ytdl(url, { filter: 'audioonly' });
+                            const dispatcher = connection.playStream(stream);
+
+                            dispatcher.on('error', e => {
+                                // Catch any errors that may arise
+                                console.log(e);
+                                });
+
+                            dispatcher.on('end', () => {
+                                message.member.voiceChannel.leave();
+                            });
+                        })
+                        .catch(console.log);
+                } else {
+                    message.reply("You need to join a voice channel first!");
+                }
+            } else {
+                message.reply("You need to specify the url of a youtube video!");
+            }
+            break;
+/*
+            case "say": 
+            if (!message.guild) break;
+
+            if (args[0] != null) {
+
+            } else {
+                message.reply
+            }
+
+            say(message, albatross);
+
+            break;
+            */
+            case "reminder":
+            if (message.channel.id == '405217639523155968') {
+                message.delete();
+                chan = message.channel.guild.channels.find('name','general');
+                chan.send("Reminder: Game tonight starts at 7:30 central. I hope to \"see\" you all there!");
+            }
+            break;
+          }
+      }
+  });
 
 bot.login(token);
 
@@ -66,4 +140,62 @@ function rollDice(count, sides) {
         result += Math.floor(Math.random() * sides) + 1;
     }
     return result;
+} // rollDice(count, sides)
+
+function say(message, phrase) {
+    if (message.member.voiceChannel) {
+        message.member.voiceChannel.join()
+                .then(connection => { // Connection is an instance of VoiceConnection
+                    const execSync = require('child_process').execSync;
+                    const command = 'say -o sayfile.mp4 ' + '\"' + String(phrase) + '\"'
+
+                    var child = execSync(command, (error, stdout, stderr) => {
+                        if(error) {
+                            console.error(`exec error: ${error}`);
+                            return;
+                        }
+                    })
+                    
+
+                    // const say = spawn('say', ['-o', 'sayfile.mp4', phrase]);
+
+                    
+                    const dispatcher = connection.playFile('/Users/Kyle/Iris/sayfile.mp4');
+
+                    dispatcher.on('error', e => {
+                        // Catch any errors that may arise
+                        console.log(e);
+                    });
+
+                    dispatcher.on('end', () => {
+                        message.member.voiceChannel.leave()
+                    });
+                })
+                .catch(console.log);
+            } else {
+                message.reply('You need to join a voice channel first!');
+            } 
 }
+
+function play(message, file) {
+    if (message.member.voiceChannel) {
+                message.member.voiceChannel.join()
+                    .then(connection => { // Connection is an instance of VoiceConnection
+                        let filepath = '/Users/kyle/Iris/Audio/' + String(file);
+                        const dispatcher = connection.playFile(filepath);
+
+                        dispatcher.on('error', e => {
+                            // Catch any errors that may arise
+                            console.log(e);
+                        });
+
+                        dispatcher.on('end', () => {
+                            message.member.voiceChannel.leave()
+                        });
+                    })
+                    .catch(console.log);
+                } else {
+                  message.reply('You need to join a voice channel first!');
+              } 
+}
+

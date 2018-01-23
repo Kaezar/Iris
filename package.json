@@ -6,10 +6,11 @@
   "author": "Kyle Drum",
   "dependencies": {
     "bufferutil": "^3.0.3",
-    "discord.js": "git+https://github.com/discordjs/discord.js.git",
+    "discord.js": "^11.3.0",
     "erlpack": "github:hammerandchisel/erlpack",
     "ffmpeg-binaries": "^3.2.2-3",
-    "libsodium-wrappers": "^0.7.3",
-    "node-opus": "^0.2.7"
+    "libsodium": "^0.7.3",
+    "node-opus": "^0.2.7",
+    "ytdl-core": "^0.19.0"
   }
 }
