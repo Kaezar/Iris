@@ -24,6 +24,22 @@ bot.on('message', message => {
         message.channel.send(`Hello ${author}`);
     } // if
 
+    // portal jokes
+    if(mess.includes('portal') || mess.includes('science') || mess.includes('cake') || mess.includes('testing') || mess.includes('aperture') || mess.includes('glados')) {
+        const cube = bot.emojis.find('name', 'companioncube');
+        message.react(cube);
+    }
+
+    if (message.mentions.users.find('username', 'Iris')) {
+        if(mess.includes('thanks') || mess.includes('thank you')) {
+            message.channel.send(`You're welcome, ${author}`);
+        } else if (mess.includes('hello')) {
+            message.channel.send(`Hello ${author}`);
+        } else if (mess.includes('i love you')) {
+            message.channel.send(`I love you too ${author}`);
+        }
+    }
+
     // commands
     if (message.content.substring(0,1) == "!") {
         var args = message.content.substring(1).split(' ');
@@ -61,10 +77,10 @@ bot.on('message', message => {
                         message.channel.send(`Natural 20! ${nat20}`);
                     }
                 } else {
-                    message.channel.send("Not a valid dice roll.");
+                    message.reply("Not a valid dice roll.");
                 }
             } else {
-                message.channel.send("Not a valid dice roll.");
+                message.reply("Not a valid dice roll.");
             }
             break;
             case "rocks":
@@ -126,6 +142,22 @@ bot.on('message', message => {
                 message.delete();
                 chan = message.channel.guild.channels.find('name','general');
                 chan.send("Reminder: Game tonight starts at 7:30 central. I hope to \"see\" you all there!");
+            }
+            break;
+
+            case "join":
+            if (message.member.voiceChannel) {
+                message.member.voiceChannel.join();
+            } else {
+                message.reply('You need to join a voice channel first!');
+            }
+            break;
+
+            case "leave":
+            if (message.member.voiceChannel) {
+                message.member.voiceChannel.leave();
+            } else {
+                message.reply('You need to join a voice channel first!');
             }
             break;
           }
