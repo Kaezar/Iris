@@ -24,6 +24,10 @@ bot.on('message', message => {
         message.channel.send(`Hello ${author}`);
     } // if
 
+    if(mess.includes('sorry, iris') || mess.includes('sorry iris')) {
+        message.channel.send(`It's okay ${author}. I forgive you.`);
+    } // if
+
     // portal jokes
     if(mess.includes('portal') || mess.includes('science') || mess.includes('cake') || mess.includes('testing') || mess.includes('aperture') || mess.includes('glados')) {
         const cube = bot.emojis.find('name', 'companioncube');
@@ -37,6 +41,8 @@ bot.on('message', message => {
             message.channel.send(`Hello ${author}`);
         } else if (mess.includes('i love you')) {
             message.channel.send(`I love you too ${author}`);
+        } else if (mess.includes('sorry')) {
+            message.channel.send(`It's okay ${author}. I forgive you.`);
         }
     }
 
@@ -123,20 +129,18 @@ bot.on('message', message => {
                 message.reply("You need to specify the url of a youtube video!");
             }
             break;
-/*
+
             case "say": 
             if (!message.guild) break;
 
             if (args[0] != null) {
-
+                let phrase = message.content.substring(5);
+                say(message,phrase);
             } else {
-                message.reply
+                message.reply("You need to specify a phrase for me to say!");
             }
-
-            say(message, albatross);
-
             break;
-            */
+            
             case "reminder":
             if (message.channel.id == '405217639523155968') {
                 message.delete();
@@ -187,10 +191,6 @@ function say(message, phrase) {
                             return;
                         }
                     })
-                    
-
-                    // const say = spawn('say', ['-o', 'sayfile.mp4', phrase]);
-
                     
                     const dispatcher = connection.playFile('/Users/Kyle/Iris/sayfile.mp4');
 
