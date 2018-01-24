@@ -24,6 +24,10 @@ bot.on('message', message => {
         message.channel.send(`Hello ${author}`);
     } // if
 
+    if(mess.includes('i love you iris') || mess.includes('i love you, iris')) {
+        message.channel.send(`I love you too ${author}`);
+    }
+
     if(mess.includes('sorry, iris') || mess.includes('sorry iris')) {
         message.channel.send(`It's okay ${author}. I forgive you.`);
     } // if
@@ -49,7 +53,7 @@ bot.on('message', message => {
     // commands
     if (message.content.substring(0,1) == "!") {
         var args = message.content.substring(1).split(' ');
-        var cmd = args[0];
+        var cmd = args[0].toLowerCase();
         args = args.splice(1);
 
         switch(cmd) {
