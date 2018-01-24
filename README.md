@@ -9,17 +9,22 @@ message. @author is the author of the triggering message.
 * Triggering phrases: "hello iris", "hello, iris", "@iris hello"
 * Bot response: "Hello @author"
 
+
 * Triggering phrases: "thanks iris", "thanks, iris", "thank you iris", "thank you, iris", "@iris thanks", "@iris thank you"
 * Bot response: "You're welcome, @author"
+
 
 * Triggering phrases: "i love you iris", "i love you, iris", "@iris i love you"
 * Bot response: "I love you too @author"
 
+
 * Triggering phrases: "sorry iris", "sorry, iris", "@iris sorry"
 * Bot response: "It's okay @author. I forgive you."
 
+
 * Triggering phrases: "portal", "science", "cake", "testing", "aperture", "glados"
 * Bot response: react to triggering message with custom companion cube emoji.
+
 
 ### Commands
 The command keyword is not case-sensitive, but the subsequent arguments are.
