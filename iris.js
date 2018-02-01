@@ -109,28 +109,32 @@ bot.on('message', message => {
             case "play":
             const voiceChannel = message.member.voiceChannel;
             if (args[0] != null) {
-                if (voiceChannel) {
-                    voiceChannel.join()
-                        .then(connection => {
-                            let url = String(args[0]);
-                            const stream = ytdl(url, { filter: 'audioonly' });
-                            const dispatcher = connection.playStream(stream);
+                if (args[0].substring(0,29) == "https://www.youtube.com/watch" || args[0].substring(0,28) == "http://www.youtube.com/watch") {
+                    if (voiceChannel) {
+                        voiceChannel.join()
+                            .then(connection => {
+                                let url = String(args[0]);
+                                const stream = ytdl(url, { filter: 'audioonly' });
+                                const dispatcher = connection.playStream(stream);
 
-                            dispatcher.on('error', e => {
-                                // Catch any errors that may arise
-                                console.log(e);
+                                dispatcher.on('error', e => {
+                                    // Catch any errors that may arise
+                                    console.log(e);
+                                    });
+
+                                dispatcher.on('end', () => {
+                                    message.member.voiceChannel.leave();
                                 });
-
-                            dispatcher.on('end', () => {
-                                message.member.voiceChannel.leave();
-                            });
-                        })
-                        .catch(console.log);
+                            })
+                            .catch(console.log);
+                    } else {
+                        message.reply("You need to join a voice channel first!");
+                    }
                 } else {
-                    message.reply("You need to join a voice channel first!");
+                    play(message, args[0]);
                 }
             } else {
-                message.reply("You need to specify the url of a youtube video!");
+                message.reply("You need to specify the url of a youtube video or the name of a file to play!");
             }
             break;
 
