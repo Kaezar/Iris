@@ -163,6 +163,30 @@ bot.on('message', message => {
                 message.reply('You need to join a voice channel first!');
             }
             break;
+
+            case "help":
+            let helpMessage = "Commands:\n"  +
+            "Note: the command keyword is not case-sensitive, but the subsequent arguments are.\n"  +
+            "* !ping\n" +
+            "  * Bot response: \"pong\"\n" +
+            "* !roll xdy+mod\n" +
+            "  * x, y, and mod are integers. +mod is optional." +
+            "  * Bot simulates the roll of x y-sided die and adds mod to the result (if applicable).\n" +
+            "  * Bot response: result\n" +
+            "* !rocks\n" +
+            "  * Bot response: \"Rocks fall. Everyone dies.\"\n" +
+            "* !play url OR !play filename\n" +
+            "  * url is the url of a youtube video or filename is the name of an audio file in the bot's audio folder.\n" +
+            "  * Bot joins the voice channel the caller is in, and plays the audio of the youtube video or the file, then leaves the voice channel.\n" +
+            "* !say phrase\n" +
+            "  * phrase is a text phrase for the bot to say\n" +
+            "  * Bot joins the voice channel the caller is in, says the phrase (using a tts program), then leaves the voice channel.\n" +
+            "* !join\n" +
+            "  * Bot joins the voice channel the caller is in.\n" +
+            "* !leave\n" +
+            "  * Bot leaves the voice channel the caller is in.";
+            message.channel.send(helpMessage);
+            break;
           }
       }
   });

@@ -32,12 +32,9 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
   * Bot response: result
 * !rocks
   * Bot response: "Rocks fall. Everyone dies."
-* !playfile filename
-  * filename is the name of an audio file in the bot's audio folder
-  * Bot joins the voice channel the caller is in, and plays the audio file, then leaves the voice channel.
-* !play url
-  * url is the url of a youtube video
-  * Bot joins the voice channel the caller is in, and plays the audio of the youtube video, then leaves the voice channel.
+* !play url OR !play filename
+  * url is the url of a youtube video or filename is the name of an audio file in the bot's audio folder.
+  * Bot joins the voice channel the caller is in, and plays the audio of the youtube video or the file, then leaves the voice channel.
 * !say phrase
   * phrase is a text phrase for the bot to say
   * Bot joins the voice channel the caller is in, says the phrase (using a tts program), then leaves the voice channel.
