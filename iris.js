@@ -97,15 +97,6 @@ bot.on('message', message => {
             message.channel.send("Rocks fall. Everyone dies.");
             break;
 
-            case "playfile":
-            if (!message.guild) break;
-            if (args[0] != null) {
-                play(message, args[0]);
-            } else {
-                message.reply("Specify a file to play.");
-            }
-            break;
-
             case "play":
             const voiceChannel = message.member.voiceChannel;
             if (args[0] != null) {
