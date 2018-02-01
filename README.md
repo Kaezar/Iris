@@ -21,7 +21,16 @@ message. @author is the author of the triggering message.
 * Triggering phrases: "portal", "science", "cake", "testing", "aperture", "glados"
   * Bot response: react to triggering message with custom companion cube emoji.
 
+* Triggering phrases: "what is my avatar", "what's my avatar", "what does my avatar look like"
+  * Bot response: link to url of triggering message's author's avatar.
 
+* Triggering phrases: "@iris your avatar"
+  * Bot response: link to url of bot's avatar.
+
+* Triggering phrases: "@iris your source"
+  * Bot response: bot source code.
+
+2
 ### Commands
 The command keyword is not case-sensitive, but the subsequent arguments are.
 * !ping
@@ -42,3 +51,7 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
   * Bot joins the voice channel the caller is in.
 * !leave
   * Bot leaves the voice channel the caller is in.
+* !help
+  * Bot response: list of commands (this one).
+* !source
+  * Bot response: bot source code.

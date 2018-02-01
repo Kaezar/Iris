@@ -9,6 +9,9 @@ bot.on('ready', () => {
 });
 // message event handler
 bot.on('message', message => {
+    if(message.author == bot.user) {
+        return;
+    }
 
     let author = message.author;
 
@@ -38,6 +41,10 @@ bot.on('message', message => {
         message.react(cube);
     }
 
+    if(mess.includes('what is my avatar') || mess.includes("what's my avatar") || mess.includes("what does my avatar look like")) {
+        message.reply(message.author.avatarURL);
+    }
+
     if (message.mentions.users.find('username', 'Iris')) {
         if(mess.includes('thanks') || mess.includes('thank you')) {
             message.channel.send(`You're welcome, ${author}`);
@@ -47,6 +54,10 @@ bot.on('message', message => {
             message.channel.send(`I love you too ${author}`);
         } else if (mess.includes('sorry')) {
             message.channel.send(`It's okay ${author}. I forgive you.`);
+        } else if (mess.includes('your avatar')) {
+            message.reply(bot.user.avatarURL);
+        } else if (mess.includes('your source')) {
+            message.channel.send(getSource(), {code: 'javascript', split: true});
         }
     }
 
@@ -105,7 +116,7 @@ bot.on('message', message => {
                         voiceChannel.join()
                             .then(connection => {
                                 let url = String(args[0]);
-                                const stream = ytdl(url, { filter: 'audioonly' });
+                                const stream = ytdl(url, {filter: 'audioonly'});
                                 const dispatcher = connection.playStream(stream);
 
                                 dispatcher.on('error', e => {
@@ -141,7 +152,7 @@ bot.on('message', message => {
             break;
             
             case "reminder":
-            if (message.channel.id == '405217639523155968') {
+            if (message.channel.id == '323608022377299972') {
                 message.delete();
                 chan = message.channel.guild.channels.find('name','general');
                 chan.send("Reminder: Game tonight starts at 7:30 central. I hope to \"see\" you all there!");
@@ -186,6 +197,11 @@ bot.on('message', message => {
             "* !leave\n" +
             "  * Bot leaves the voice channel the caller is in.";
             message.channel.send(helpMessage);
+            break;
+
+            case "source":
+            let sourceCode = getSource();
+            message.channel.send(sourceCode, {code: 'javascript', split: true});
             break;
           }
       }
@@ -252,5 +268,16 @@ function play(message, file) {
                 } else {
                   message.reply('You need to join a voice channel first!');
               } 
+}
+
+function getSource() {
+    const execSync = require('child_process').execSync;
+    var child = execSync('cat iris.js', (error,stdout,stderr) => {
+        if(error) {
+            console.error(stderr);
+            return;
+        }
+    });
+    return child;
 }
 
