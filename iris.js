@@ -187,7 +187,7 @@ function say(message, phrase) {
         message.member.voiceChannel.join()
                 .then(connection => { // Connection is an instance of VoiceConnection
                     const execSync = require('child_process').execSync;
-                    const command = 'say -o sayfile.mp4 ' + '\"' + String(phrase) + '\"'
+                    const command = 'say -o ./Audio/sayfile.mp4 ' + '\"' + String(phrase) + '\"'
 
                     var child = execSync(command, (error, stdout, stderr) => {
                         if(error) {
@@ -196,7 +196,7 @@ function say(message, phrase) {
                         }
                     })
                     
-                    const dispatcher = connection.playFile('/Users/Kyle/Iris/sayfile.mp4');
+                    const dispatcher = connection.playFile('./Audio/sayfile.mp4');
 
                     dispatcher.on('error', e => {
                         // Catch any errors that may arise
@@ -217,7 +217,7 @@ function play(message, file) {
     if (message.member.voiceChannel) {
                 message.member.voiceChannel.join()
                     .then(connection => { // Connection is an instance of VoiceConnection
-                        let filepath = '/Users/kyle/Iris/Audio/' + String(file);
+                        let filepath = './Audio/' + String(file);
                         const dispatcher = connection.playFile(filepath);
 
                         dispatcher.on('error', e => {
