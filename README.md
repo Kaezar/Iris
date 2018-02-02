@@ -46,6 +46,9 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
 * !say phrase
   * phrase is a text phrase for the bot to say
   * Bot joins the voice channel the caller is in, says the phrase (using a tts program), then leaves the voice channel.
+* !reminder channel time
+  * channel is the name of a guild text channel and time is the time of the meeting.
+  * Bot response: deletes triggering message and sends "Reminder: Game tonight starts at ${time}. I hope to "see" you all there!" to the specified channel
 * !join
   * Bot joins the voice channel the caller is in.
 * !leave

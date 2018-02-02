@@ -92,48 +92,10 @@ bot.on('message', message => {
             case "roll":
             if(args[0] != null) {
                 let dice = args[0].split("d");
-                let preMod = dice[1].split("+");
-                let checker = preMod[1];
-                checker = parseInt(checker);
-                if(!isNaN(checker)){
-                    var mod = preMod[1];
-                    dice.pop();
-                    dice.push(preMod[0]);
-                }
-                if (!isNaN(dice[0]) && !isNaN(dice[1]) && dice.length == 2){
-                    if(args[1] != null && args[1].toLowerCase() == 'adv') {
-                        let result = rollDice(dice[0],dice[1]);
-                        let critCheck = result;
-                    
-                        if(!isNaN(mod)){
-                            result = parseInt(result);
-                            mod = parseInt(mod);
-                            result = result + mod;
-                        }
-                        message.channel.send(result);
-                        if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
-                            const nat20 = bot.emojis.find('name', 'nat20');
-                            message.channel.send(`Natural 20! ${nat20}`);
-                        }
-                    }
-                    let result = rollDice(dice[0],dice[1]);
-                    let critCheck = result;
-                    
-                    if(!isNaN(mod)){
-                        result = parseInt(result);
-                        mod = parseInt(mod);
-                        result = result + mod;
-                    }
-                    message.channel.send(result);
-                    if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
-                        const nat20 = bot.emojis.find('name', 'nat20');
-                        message.channel.send(`Natural 20! ${nat20}`);
-                    }
-                } else {
-                    message.reply("Not a valid dice roll.");
-                }
+                let adv = args[1];
+                parseRoll(message,dice,adv);
             } else {
-                message.reply("Not a valid dice roll.");
+                message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
             }
             break;
             case "rocks":
@@ -144,26 +106,8 @@ bot.on('message', message => {
             const voiceChannel = message.member.voiceChannel;
             if (args[0] != null) {
                 if (args[0].substring(0,29) == "https://www.youtube.com/watch" || args[0].substring(0,28) == "http://www.youtube.com/watch") {
-                    if (voiceChannel) {
-                        voiceChannel.join()
-                            .then(connection => {
-                                let url = String(args[0]);
-                                const stream = ytdl(url, {filter: 'audioonly'});
-                                const dispatcher = connection.playStream(stream);
-
-                                dispatcher.on('error', e => {
-                                    // Catch any errors that may arise
-                                    console.log(e);
-                                    });
-
-                                dispatcher.on('end', () => {
-                                    message.member.voiceChannel.leave();
-                                });
-                            })
-                            .catch(console.log);
-                    } else {
-                        message.reply("You need to join a voice channel first!");
-                    }
+                    let url = String(args[0]);
+                    playURL(voiceChannel, url);
                 } else {
                     play(message, args[0]);
                 }
@@ -184,13 +128,10 @@ bot.on('message', message => {
             break;
             
             case "reminder":
-            if (message.channel.id == '323608022377299972') {
-                message.delete();
-                chan = message.channel.guild.channels.find('name','general');
-                chan.send("Reminder: Game tonight starts at 7:30 central. I hope to \"see\" you all there!");
-            }
+            reminder(message, args[0], args[1]);
             break;
 
+            // join voice channel
             case "join":
             if (message.member.voiceChannel) {
                 message.member.voiceChannel.join();
@@ -199,6 +140,7 @@ bot.on('message', message => {
             }
             break;
 
+            // leave voice channel
             case "leave":
             if (message.member.voiceChannel) {
                 message.member.voiceChannel.leave();
@@ -207,30 +149,8 @@ bot.on('message', message => {
             }
             break;
 
+            // send a message containing the commands section of the bot's readme file
             case "help":
-            /*
-            let helpMessage = "Commands:\n"  +
-            "Note: the command keyword is not case-sensitive, but the subsequent arguments are.\n"  +
-            "* !ping\n" +
-            "  * Bot response: \"pong\"\n" +
-            "* !roll xdy+mod\n" +
-            "  * x, y, and mod are integers. +mod is optional." +
-            "  * Bot simulates the roll of x y-sided die and adds mod to the result (if applicable).\n" +
-            "  * Bot response: result\n" +
-            "* !rocks\n" +
-            "  * Bot response: \"Rocks fall. Everyone dies.\"\n" +
-            "* !play url OR !play filename\n" +
-            "  * url is the url of a youtube video or filename is the name of an audio file in the bot's audio folder.\n" +
-            "  * Bot joins the voice channel the caller is in, and plays the audio of the youtube video or the file, then leaves the voice channel.\n" +
-            "* !say phrase\n" +
-            "  * phrase is a text phrase for the bot to say\n" +
-            "  * Bot joins the voice channel the caller is in, says the phrase (using a tts program), then leaves the voice channel.\n" +
-            "* !join\n" +
-            "  * Bot joins the voice channel the caller is in.\n" +
-            "* !leave\n" +
-            "  * Bot leaves the voice channel the caller is in.";
-            message.channel.send(helpMessage);
-            */
             message.channel.send(help, {code: 'markdown', split: true});
             break;
 
@@ -251,6 +171,41 @@ bot.on('message', message => {
   });
 
 bot.login(token);
+
+function parseRoll(message, dice, adv) {
+    let preMod = dice[1].split("+");
+        let checker = preMod[1];
+        checker = parseInt(checker);
+        if(!isNaN(checker)){
+            var mod = preMod[1];
+            dice.pop();
+            dice.push(preMod[0]);
+        }
+        if (!isNaN(dice[0]) && !isNaN(dice[1]) && dice.length == 2){
+            if(adv != null && adv.toLowerCase() == 'adv') {
+                roll(message,dice,mod);
+            }
+            roll(message,dice,mod);
+        } else {
+            message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
+        }
+}
+
+function roll(message, dice, mod) {
+    let result = rollDice(dice[0],dice[1]);
+    let critCheck = result;
+
+    if(!isNaN(mod)){
+        result = parseInt(result);
+        mod = parseInt(mod);
+        result = result + mod;
+    }
+    message.channel.send(result);
+    if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
+        const nat20 = bot.emojis.find('name', 'nat20');
+        message.channel.send(`Natural 20! ${nat20}`);
+    }
+}
 
 function rollDice(count, sides) {
     var result = 0;
@@ -291,7 +246,7 @@ function say(message, phrase) {
             } 
 }
 
-function play(message, file) {
+function playFile(message, file) {
     if (message.member.voiceChannel) {
                 message.member.voiceChannel.join()
                     .then(connection => { // connection is an instance of VoiceConnection
@@ -312,6 +267,28 @@ function play(message, file) {
                 } else {
                   message.reply('You need to join a voice channel first!');
               } 
+}
+
+function playURL(voiceChannel, url) {
+    if (voiceChannel) {
+        voiceChannel.join()
+            .then(connection => {
+                const stream = ytdl(url, {filter: 'audioonly'});
+                const dispatcher = connection.playStream(stream);
+
+                dispatcher.on('error', e => {
+                    // Catch any errors that may arise
+                    console.log(e);
+                    });
+
+                dispatcher.on('end', () => {
+                    message.member.voiceChannel.leave();
+                });
+            })
+            .catch(console.log);
+    } else {
+        message.reply("You need to join a voice channel first!");
+    }
 }
 
 function record(message) {
@@ -379,4 +356,23 @@ function getHelp() {
         }
     });
     return child;
+}
+
+function reminder(message, channel, time) {
+    chan = message.channel.guild.channels.find('name','general');
+    if (channel != null && time != null) {
+        chan = message.channel.guild.channels.find('name', channel);
+        if (chan != undefined) {
+            if (chan.type == 'text') {
+                message.delete();
+                chan.send(`Reminder: Game tonight starts at ${time}. I hope to \"see\" you all there!`);
+            } else {
+                message.reply('The channel must be a guild text channel!')
+            }
+        } else {
+            message.reply(`I'm sorry. I can't seem to find the channel: ${channel}`);
+        }
+    } else {
+        message.reply('You need to specify a channel name and meeting time!');
+    }
 }
