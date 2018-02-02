@@ -3,7 +3,10 @@ const ytdl = require("ytdl-core");
 const bot = new Discord.Client();
 const auth = require("./auth.json");
 const token = auth.token;
-
+const fs = require('fs');
+const help = getHelp();
+const source = getSource();
+// ready message
 bot.on('ready', () => {
     console.log('I am ready!');
 });
@@ -29,36 +32,50 @@ bot.on('message', message => {
 
     if(mess.includes('i love you iris') || mess.includes('i love you, iris')) {
         message.channel.send(`I love you too ${author}`);
-    }
+    } // if
 
+    // forgiveness
     if(mess.includes('sorry, iris') || mess.includes('sorry iris')) {
         message.channel.send(`It's okay ${author}. I forgive you.`);
     } // if
 
     // portal jokes
-    if(mess.includes('portal') || mess.includes('science') || mess.includes('cake') || mess.includes('testing') || mess.includes('aperture') || mess.includes('glados')) {
+    if(mess.includes('portal') || mess.includes('science') || mess.includes('cake') || mess.includes('testing') || mess.includes('aperture') || mess.includes('glados') || mess.includes('you monster')) {
         const cube = bot.emojis.find('name', 'companioncube');
         message.react(cube);
     }
 
+    // responds with user avatar image
     if(mess.includes('what is my avatar') || mess.includes("what's my avatar") || mess.includes("what does my avatar look like")) {
         message.reply(message.author.avatarURL);
-    }
+    } // if
+
+    if(mess.includes('what is your avatar iris') || mess.includes('what is your avatar, iris') || mess.includes('iris what is your avatar') || mess.includes('iris, what is your avatar')) {
+        message.reply(bot.user.avatarURL);
+    } // if
 
     if (message.mentions.users.find('username', 'Iris')) {
         if(mess.includes('thanks') || mess.includes('thank you')) {
             message.channel.send(`You're welcome, ${author}`);
-        } else if (mess.includes('hello')) {
+        } // if
+        if (mess.includes('hello')) {
             message.channel.send(`Hello ${author}`);
-        } else if (mess.includes('i love you')) {
+        } // if
+        if (mess.includes('i love you')) {
             message.channel.send(`I love you too ${author}`);
-        } else if (mess.includes('sorry')) {
+        } // if
+        if (mess.includes('sorry')) {
             message.channel.send(`It's okay ${author}. I forgive you.`);
-        } else if (mess.includes('your avatar')) {
+        } // if
+        if (mess.includes('your avatar')) {
             message.reply(bot.user.avatarURL);
-        } else if (mess.includes('your source')) {
+        } // if
+        if (mess.includes('your source')) {
             message.channel.send(getSource(), {code: 'javascript', split: true});
         }
+        if (mess.includes('my avatar')) {
+            message.reply(message.author.avatarURL);
+        } // if
     }
 
     // commands
@@ -84,8 +101,23 @@ bot.on('message', message => {
                     dice.push(preMod[0]);
                 }
                 if (!isNaN(dice[0]) && !isNaN(dice[1]) && dice.length == 2){
-                    var result = rollDice(dice[0],dice[1]);
-                    var critCheck = result;
+                    if(args[1] != null && args[1].toLowerCase() == 'adv') {
+                        let result = rollDice(dice[0],dice[1]);
+                        let critCheck = result;
+                    
+                        if(!isNaN(mod)){
+                            result = parseInt(result);
+                            mod = parseInt(mod);
+                            result = result + mod;
+                        }
+                        message.channel.send(result);
+                        if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
+                            const nat20 = bot.emojis.find('name', 'nat20');
+                            message.channel.send(`Natural 20! ${nat20}`);
+                        }
+                    }
+                    let result = rollDice(dice[0],dice[1]);
+                    let critCheck = result;
                     
                     if(!isNaN(mod)){
                         result = parseInt(result);
@@ -176,6 +208,7 @@ bot.on('message', message => {
             break;
 
             case "help":
+            /*
             let helpMessage = "Commands:\n"  +
             "Note: the command keyword is not case-sensitive, but the subsequent arguments are.\n"  +
             "* !ping\n" +
@@ -197,11 +230,21 @@ bot.on('message', message => {
             "* !leave\n" +
             "  * Bot leaves the voice channel the caller is in.";
             message.channel.send(helpMessage);
+            */
+            message.channel.send(help, {code: 'markdown', split: true});
             break;
 
             case "source":
-            let sourceCode = getSource();
-            message.channel.send(sourceCode, {code: 'javascript', split: true});
+            message.channel.send(source, {code: 'javascript', split: true});
+            break;
+
+            /**
+            * Start recording audio in voice channel. 
+            * Saves each speach segment (start of speach to stop) as a new PCM file. 
+            * Use !leave to end recording.
+            */
+            case "record":
+            record(message);
             break;
           }
       }
@@ -251,7 +294,7 @@ function say(message, phrase) {
 function play(message, file) {
     if (message.member.voiceChannel) {
                 message.member.voiceChannel.join()
-                    .then(connection => { // Connection is an instance of VoiceConnection
+                    .then(connection => { // connection is an instance of VoiceConnection
                         let filepath = './Audio/' + String(file);
                         const dispatcher = connection.playFile(filepath);
 
@@ -260,6 +303,7 @@ function play(message, file) {
                             console.log(e);
                         });
 
+                        // leave voice channel when done speaking
                         dispatcher.on('end', () => {
                             message.member.voiceChannel.leave()
                         });
@@ -268,6 +312,45 @@ function play(message, file) {
                 } else {
                   message.reply('You need to join a voice channel first!');
               } 
+}
+
+function record(message) {
+    if (message.member.voiceChannel) {
+        const voiceChannel = message.member.voiceChannel;
+        message.member.voiceChannel.join()
+        .then(connection => { // // connection is an instance of VoiceConnection
+            // receiver is of the VoiceReceiver class
+            const receiver = connection.createReceiver();
+
+            // Catch any errors that may arise
+            receiver.on('warn', (reason, warning) => {
+                console.log(`${reason} error: ${warning}`);
+            });
+            // speaking event is emitted when a user starts and stops speaking
+            connection.on('speaking', (user, speaking) => {
+                // speaking is true while the user is speaking
+                if (speaking) {
+                    // console.log('begin stream: ' + Date.now());
+
+                    // create readable stream
+                    const audioStream = receiver.createPCMStream(user);
+                    // function returns writable stream (file)
+                    const outputStream = generateOutputFile(voiceChannel, user);
+
+                    // write to file
+                    audioStream.pipe(outputStream);
+                    /*
+                    audioStream.on('end', () => {
+                        console.log('end stream: ' + Date.now());
+                    });
+                    */
+                    }
+                });
+        })
+        .catch(console.log);
+    } else {
+        message.reply("You need to join a voice channel first!");
+    }
 }
 
 function getSource() {
@@ -281,3 +364,19 @@ function getSource() {
     return child;
 }
 
+function generateOutputFile(channel, user) {
+  const fileName = `./Audio/Recordings/${channel.name}-${user.username}-${Date.now()}.pcm`;
+  return fs.createWriteStream(fileName);
+}
+
+function getHelp() {
+    const execSync = require('child_process').execSync;
+    var child = execSync("sed -n -e '/Command/,$p' README.md", (error,stdout,stderr) => {
+    //var child = execSync('cat README.md', (error,stdout,stderr) => {
+        if (error) {
+            console.error(stderr);
+            return;
+        }
+    });
+    return child;
+}

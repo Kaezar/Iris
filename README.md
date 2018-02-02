@@ -18,19 +18,18 @@ message. @author is the author of the triggering message.
 * Triggering phrases: "sorry iris", "sorry, iris", "@iris sorry"
   * Bot response: "It's okay @author. I forgive you."
 
-* Triggering phrases: "portal", "science", "cake", "testing", "aperture", "glados"
+* Triggering phrases: "portal", "science", "cake", "testing", "aperture", "glados" "you monster"
   * Bot response: react to triggering message with custom companion cube emoji.
 
-* Triggering phrases: "what is my avatar", "what's my avatar", "what does my avatar look like"
+* Triggering phrases: "what is my avatar", "what's my avatar", "what does my avatar look like", "@iris my avatar"
   * Bot response: link to url of triggering message's author's avatar.
 
-* Triggering phrases: "@iris your avatar"
+* Triggering phrases: "what is your avatar iris", "what is your avatar, iris", "iris what is your avatar", "iris, what is your avatar", "@iris your avatar"
   * Bot response: link to url of bot's avatar.
 
 * Triggering phrases: "@iris your source"
   * Bot response: bot source code.
 
-2
 ### Commands
 The command keyword is not case-sensitive, but the subsequent arguments are.
 * !ping
@@ -55,3 +54,5 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
   * Bot response: list of commands (this one).
 * !source
   * Bot response: bot source code.
+* !record 
+  * Bot joins the voice channel the caller is in, and begins recording any audio that is spoken on the channel. Stop recording with !leave.
