@@ -34,9 +34,9 @@ message. @author is the author of the triggering message.
 The command keyword is not case-sensitive, but the subsequent arguments are.
 * !ping
   * Bot response: "pong"
-* !roll xdy+mod
-  * x, y, and mod are integers. +mod is optional.
-  * Bot simulates the roll of x y-sided die and adds mod to the result (if applicable).
+* !roll xdy+mod adv
+  * x, y, and mod are integers. +mod and adv are optional.
+  * Bot simulates the roll of x y-sided die and adds mod to the result (if applicable). If adv and the roll is 1d20, then it rolls twice.
   * Bot response: result
 * !rocks
   * Bot response: "Rocks fall. Everyone dies."

@@ -20,6 +20,10 @@ bot.on('message', message => {
 
     let mess = message.content.toLowerCase();
 
+    if (message.guild) {
+        let isAdmin = message.channel.permissionsFor(message.member).has("ADMINISTRATOR");
+    }
+
     // politeness
     if(mess.includes('thanks, iris') || mess.includes('thanks iris') || mess.includes('thank you, iris') || mess.includes('thank you, iris')) {
         message.channel.send(`You're welcome, ${author}`);
@@ -55,7 +59,7 @@ bot.on('message', message => {
     } // if
 
     if (message.mentions.users.find('username', 'Iris')) {
-        if(mess.includes('thanks') || mess.includes('thank you')) {
+        if(mess.includes('thank')) {
             message.channel.send(`You're welcome, ${author}`);
         } // if
         if (mess.includes('hello')) {
@@ -80,8 +84,11 @@ bot.on('message', message => {
 
     // commands
     if (message.content.substring(0,1) == "!") {
+        // args are each word after !
         var args = message.content.substring(1).split(' ');
+        // cmd is the word immediately following the !
         var cmd = args[0].toLowerCase();
+        // remove cmd from args
         args = args.splice(1);
 
         switch(cmd) {
@@ -89,6 +96,7 @@ bot.on('message', message => {
             message.channel.send("pong");
             break;
 
+            // roll dice
             case "roll":
             if(args[0] != null) {
                 let dice = args[0].split("d");
@@ -98,6 +106,7 @@ bot.on('message', message => {
                 message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
             }
             break;
+
             case "rocks":
             message.channel.send("Rocks fall. Everyone dies.");
             break;
@@ -109,7 +118,7 @@ bot.on('message', message => {
                     let url = String(args[0]);
                     playURL(voiceChannel, url);
                 } else {
-                    play(message, args[0]);
+                    playFile(message, args[0]);
                 }
             } else {
                 message.reply("You need to specify the url of a youtube video or the name of a file to play!");
@@ -119,11 +128,15 @@ bot.on('message', message => {
             case "say": 
             if (!message.guild) break;
 
-            if (args[0] != null) {
-                let phrase = message.content.substring(5);
-                say(message,phrase);
+            if (!isAdmin) {
+                message.reply("You don't have permission to tell me what to say!");
             } else {
-                message.reply("You need to specify a phrase for me to say!");
+                if (args[0] != null) {
+                    let phrase = message.content.substring(5);
+                    say(message,phrase);
+                } else {
+                    message.reply("You need to specify a phrase for me to say!");
+                }
             }
             break;
             
