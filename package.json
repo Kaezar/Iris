@@ -8,6 +8,7 @@
     "bufferutil": "^3.0.3",
     "discord.js": "^11.3.0",
     "erlpack": "github:hammerandchisel/erlpack",
+    "eslint": "^4.17.0",
     "ffmpeg-binaries": "^3.2.2-3",
     "libsodium": "^0.7.3",
     "node-opus": "^0.2.7",
