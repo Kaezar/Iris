@@ -24,7 +24,7 @@ bot.on('guildCreate', guild => {
 });
 // message event handler
 bot.on('message', message => {
-	if(message.author == bot.user) {
+	if(message.author == bot.user || !message.member) {
 		return;
 	}
 
@@ -32,9 +32,7 @@ bot.on('message', message => {
 
 	const mess = message.content.toLowerCase();
 
-	if (message.guild && message.member) {
-		var isAdmin = message.member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
-	}
+	var isAdmin = message.member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
 
 	// politeness
 	if(mess.includes('thanks, iris') || mess.includes('thanks iris') || mess.includes('thank you, iris') || mess.includes('thank you, iris')) {
