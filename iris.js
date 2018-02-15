@@ -9,6 +9,7 @@ const source = getSource();
 // ready message
 bot.on('ready', () => {
 	console.log('I am ready!');
+	bot.user.setActivity("you", { type: "WATCHING" });
 });
 // event handler for when bot is added to a guild.
 bot.on('guildCreate', guild => {
