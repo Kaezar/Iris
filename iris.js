@@ -114,15 +114,18 @@ bot.on('message', message => {
 			case "roll":
 			if(args[0] != null) {
 				const dice = args[0].split("d");
+				// in the roll formula, dice is an array that contains either x and y, or x and y+mod
 				const adv = args[1];
+				// adv should be the string: "adv". This is checked later
 				parseRoll(message, dice, adv);
 			} else {
 				message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 			}
 			break;
 
+			// d&d joke
 			case "rocks":
-			message.channel.send("Rocks fall. Everyone dies.");
+			message.channel.send(wrap("Rocks fall. Everyone dies."));
 			break;
 
 			case "play":
@@ -130,8 +133,10 @@ bot.on('message', message => {
 				if (args[0].substring(0, 29) == "https://www.youtube.com/watch" || args[0].substring(0, 28) == "http://www.youtube.com/watch") {
 					const url = String(args[0]);
 					playURL(message, url);
-				} else {
+				} else if (fs.existsSync('./Audio/' + String(args[0]))) {
 					playFile(message, args[0]);
+				} else {
+					message.reply("I'm sorry. I couldn't find a file with that name to play.")
 				}
 			} else {
 				message.reply("You need to specify the url of a youtube video or the name of a file to play!");
@@ -190,89 +195,62 @@ bot.on('message', message => {
 			case "record":
 			record(message);
 			break;
-
-			case "test":
-			if (args[0] != null) {
-				if (args[0].substring(0, 29) == "https://www.youtube.com/watch" || args[0].substring(0, 28) == "http://www.youtube.com/watch") {
-					const url = String(args[0]);
-					if (message.member.voiceChannel) {
-		message.member.voiceChannel.join()
-			.then(connection => {
-				console.log(url);
-				const stream = ytdl(url, { filter: 'audioonly' });
-				const dispatcher = connection.playStream(stream);
-
-				dispatcher.on('error', e => {
-					// Catch any errors that may arise
-					console.log(e);
-					});
-				
-				dispatcher.on('end', () => {
-					//console.log("leaving voice channel");
-					message.member.voiceChannel.leave();
-				});
-				
-				dispatcher.on('start', () => {
-					console.log("starting stream");
-				});
-
-				dispatcher.on('debug', info => {
-					console.log(info);
-				});
-			})
-			.catch(console.log);
-	} else {
-		message.reply("You need to join a voice channel first!");
-	}
-				} else {
-					playFile(message, args[0]);
-				}
-			} else {
-				message.reply("You need to specify the url of a youtube video or the name of a file to play!");
-			}
-			break;
-
 		}
 	}
 });
 
 bot.login(token);
 
+// Split the command into the individual parts of the roll formula (xdy+mod) and call roll
 function parseRoll(message, dice, adv) {
+	// Premod is two numbers: the number of 
 	const preMod = dice[1].split("+");
-		let checker = preMod[1];
-		checker = parseInt(checker);
-		if(!isNaN(checker)) {
-			var mod = preMod[1];
-			dice.pop();
-			dice.push(preMod[0]);
-		}
-		if (!isNaN(dice[0]) && !isNaN(dice[1]) && dice.length == 2) {
-			if(adv != null && adv.toLowerCase() == 'adv') {
-				roll(message, dice, mod);
-			}
+	// In the roll formula, premod is an array that contains either y and mod, or y and undefined (because no mod)
+	let checker = preMod[1];
+	// Checker is mod if there is a mod, else undefined
+	checker = parseInt(checker);
+
+	/* Determine if checker is a number (valid modifier).
+	* If so, separates the mod from preMod and replaces y+mod in dice with y from preMod.
+	* dice now contains x and y
+	*/
+	if(!isNaN(checker)) {
+		var mod = preMod[1];
+		dice.pop();
+		dice.push(preMod[0]);
+	}
+	// Check if x and y are numbers
+	if (!isNaN(dice[0]) && !isNaN(dice[1]) && dice.length == 2) {
+		// Roll an extra time if adv
+		if(adv != null && adv.toLowerCase() == 'adv') {
 			roll(message, dice, mod);
-		} else {
-			message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 		}
+		roll(message, dice, mod);
+	} else {
+		message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
+	}
 }
 
+// Call rollDice to do the calculation, add mod if mod exists, check for crits, and send message with result.
 function roll(message, dice, mod) {
 	let result = rollDice(dice[0], dice[1]);
 	const critCheck = result;
 
-	if(!isNaN(mod)) {
+	// If there is a mod, make absolutely sure mod and result are integers, and then add them together
+	if(mod) {
 		result = parseInt(result);
 		mod = parseInt(mod);
 		result = result + mod;
 	}
 	message.channel.send(result);
+	// If roll is 1d20 and result (sans mod) is 20, send congratulatory message
 	if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
 		const nat20 = bot.emojis.find('name', 'nat20');
 		message.channel.send(`Natural 20! ${nat20}`);
 	}
 }
 
+// Roll x y-sided dice and total the outcomes. x is count and y is sides
 function rollDice(count, sides) {
 	var result = 0;
 	for(var i = 0; i < count; i++) {
@@ -281,27 +259,33 @@ function rollDice(count, sides) {
 	return result;
 }
 
+/* Use tts program to generate speech of given phrase and stream it over voice channel.
+* The bottleneck of this function in terms of execution time is the generation of an output file 
+* and the subsequent reading of that output file to the dispatcher. I currently don't have a 
+* solution to this bottleneck.
+*/
 function say(message, phrase) {
 	if (message.member.voiceChannel) {
 		message.member.voiceChannel.join()
 				.then(connection => {
 				// Connection is an instance of VoiceConnection
-					const execSync = require('child_process').execSync;
-					const command = 'say -o ./Audio/sayfile.mp4 ' + '"' + String(phrase) + '"';
 
+					// Synchronously execute a child process, which is macOS' say command. Pipes output to file.
+					const execSync = require('child_process').execSync;
+					const command = 'say -v victoria -o ./Audio/sayfile.mp4 ' + '"' + String(phrase) + '"';
 					var child = execSync(command, (error, stdout, stderr) => {
 						if(error) {
 							console.error(stderr);
 							return;
 						}
 					});
+					// Stream file to voice channel
 					const dispatcher = connection.playFile('./Audio/sayfile.mp4');
-
 					dispatcher.on('error', e => {
 						// Catch any errors that may arise
 						console.log(e);
 					});
-
+					// Leave voice channel when done playing
 					dispatcher.on('end', () => {
 						message.member.voiceChannel.leave();
 					});
@@ -312,11 +296,14 @@ function say(message, phrase) {
 			}
 }
 
+// Play contents of given audio file over voice channel
 function playFile(message, file) {
 	if (message.member.voiceChannel) {
 				message.member.voiceChannel.join()
 					.then(connection => {
 					// connection is an instance of VoiceConnection
+
+
 						const filepath = './Audio/' + String(file);
 						const dispatcher = connection.playFile(filepath);
 
@@ -325,7 +312,7 @@ function playFile(message, file) {
 							console.log(e);
 						});
 
-						// leave voice channel when done speaking
+						// Leave voice channel when done playing
 						dispatcher.on('end', () => {
 							message.member.voiceChannel.leave();
 						});
@@ -340,7 +327,6 @@ function playURL(message, url) {
 	if (message.member.voiceChannel) {
 		message.member.voiceChannel.join()
 			.then(connection => {
-				console.log(url);
 				const stream = ytdl(url, { filter: 'audioonly' });
 				const dispatcher = connection.playStream(stream);
 
@@ -453,6 +439,10 @@ function reminder(message, channel, time) {
 	} else {
 		message.reply('You need to specify a channel name and meeting time!');
 	}
+}
+
+function wrap(text) {
+	return '```\n' + text.replace(/`/g, '`' + String.fromCharCode(8203)) + '\n```';
 }
 
 // catch unhandled promise rejections
