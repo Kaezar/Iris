@@ -32,8 +32,8 @@ bot.on('message', message => {
 
 	const mess = message.content.toLowerCase();
 
-	if (message.guild) {
-		var isAdmin = message.channel.permissionsFor(message.member).has("ADMINISTRATOR");
+	if (message.guild && message.member) {
+		var isAdmin = message.member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
 	}
 
 	// politeness
