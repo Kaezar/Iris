@@ -195,6 +195,14 @@ bot.on('message', message => {
 			if (!isAdmin) return message.reply("You don't have permission to do that!");
 			record(message);
 			break;
+
+			case "pause":
+			pause(message);
+			break;
+
+			case "resume":
+			resume(message);
+			break;
 		}
 	}
 });
@@ -330,24 +338,21 @@ function playURL(message, url) {
 				const stream = ytdl(url, { filter: 'audioonly' });
 				const dispatcher = connection.playStream(stream);
 
+				stream.on('info', info => {
+					title = info.title;
+					message.channel.send(wrap("Now playing: " + title));
+				});
+
 				dispatcher.on('error', e => {
 					// Catch any errors that may arise
-					console.log('error');
 					console.log(e);
-					});
-				
-				dispatcher.on('end', reason => {
-					//console.log("leaving voice channel");
-					message.member.voiceChannel.leave();
-					console.log(reason);
 				});
 				
-				dispatcher.on('start', () => {
-					console.log("starting stream");
+				dispatcher.on('end', () => {
+					message.member.voiceChannel.leave();
 				});
 
 				dispatcher.on('debug', info => {
-					console.log('debug');
 					console.log(info);
 				});
 			})
@@ -446,6 +451,30 @@ function reminder(message, channel, time) {
 
 function wrap(text) {
 	return '```\n' + text.replace(/`/g, '`' + String.fromCharCode(8203)) + '\n```';
+}
+
+function pause(message) {
+	const voiceConnection = bot.voiceConnections.find(val => val.channel.guild.id == message.guild.id);
+	if (voiceConnection === null) return message.reply("I have to be playing something to pause it, dummy!");
+	const dispatcher = voiceConnection.dispatcher;
+	if (!dispatcher.paused) {
+		dispatcher.pause();
+		message.channel.send(wrap("Playback paused."));
+	} else {
+		message.channel.send(wrap("Playback is already paused!"));
+	}
+}
+
+function resume(message) {
+	const voiceConnection = bot.voiceConnections.find(val => val.channel.guild.id == message.guild.id);
+	if (voiceConnection === null) return message.reply("I have to be playing something to resume playing it, dummy!");
+	const dispatcher = voiceConnection.dispatcher;
+	if (dispatcher.paused) {
+		dispatcher.resume();
+		message.channel.send(wrap("Playback resumed."));
+	} else {
+		message.channel.send(wrap("Playback is not paused!"));
+	}
 }
 
 // catch unhandled promise rejections
