@@ -40,7 +40,7 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
   * Bot response: result
 * !rocks
   * Bot response: "Rocks fall. Everyone dies."
-* !play url OR !play filename (NOTE: !play url does not work at the moment!)
+* !play url OR !play filename
   * url is the url of a youtube video or filename is the name of an audio file in the bot's audio folder.
   * Bot joins the voice channel the caller is in, and plays the audio of the youtube video or the file, then leaves the voice channel.
 * !say phrase
@@ -57,5 +57,5 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
   * Bot response: list of commands (this one).
 * !source
   * Bot response: bot source code.
-* !record 
+* !record
   * Bot joins the voice channel the caller is in, and begins recording any audio that is spoken on the channel. Stop recording with !leave.

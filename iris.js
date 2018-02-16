@@ -129,7 +129,7 @@ bot.on('message', message => {
 
 			case "play":
 			if (args[0] != null) {
-				if (args[0].substring(0, 29) == "https://www.youtube.com/watch" || args[0].substring(0, 28) == "http://www.youtube.com/watch") {
+				if (ytdl.validateURL(args[0])) {
 					const url = String(args[0]);
 					playURL(message, url);
 				} else if (fs.existsSync('./Audio/' + String(args[0]))) {
@@ -192,6 +192,7 @@ bot.on('message', message => {
 			* Use !leave to end recording.
 			*/
 			case "record":
+			if (!isAdmin) return message.reply("You don't have permission to do that!");
 			record(message);
 			break;
 		}
@@ -331,12 +332,14 @@ function playURL(message, url) {
 
 				dispatcher.on('error', e => {
 					// Catch any errors that may arise
+					console.log('error');
 					console.log(e);
 					});
 				
-				dispatcher.on('end', () => {
+				dispatcher.on('end', reason => {
 					//console.log("leaving voice channel");
 					message.member.voiceChannel.leave();
+					console.log(reason);
 				});
 				
 				dispatcher.on('start', () => {
@@ -344,6 +347,7 @@ function playURL(message, url) {
 				});
 
 				dispatcher.on('debug', info => {
+					console.log('debug');
 					console.log(info);
 				});
 			})
@@ -366,7 +370,7 @@ function record(message) {
 			receiver.on('warn', (reason, warning) => {
 				console.log(`${reason} error: ${warning}`);
 			});
-			// speaking event is emitted when a user starts and stops speaking
+
 			connection.on('speaking', (user, speaking) => {
 				// speaking is true while the user is speaking
 				if (speaking) {
