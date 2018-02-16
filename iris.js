@@ -216,23 +216,21 @@ bot.login(token);
 // Split the command into the individual parts of the roll formula (xdy+mod) and call roll
 function parseRoll(message, dice, adv) {
 	// Premod is two numbers: the number of 
+	if (dice[1] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 	const preMod = dice[1].split("+");
 	// In the roll formula, premod is an array that contains either y and mod, or y and undefined (because no mod)
-	let checker = preMod[1];
-	// Checker is mod if there is a mod, else undefined
-	checker = parseInt(checker);
 
 	/* Determine if checker is a number (valid modifier).
 	* If so, separates the mod from preMod and replaces y+mod in dice with y from preMod.
 	* dice now contains x and y
 	*/
-	if(!isNaN(checker)) {
+	if(numCheck(preMod[1])) {
 		var mod = preMod[1];
 		dice.pop();
 		dice.push(preMod[0]);
 	}
 	// Check if x and y are numbers
-	if (!isNaN(dice[0]) && !isNaN(dice[1]) && dice.length == 2) {
+	if (numCheck(dice[0]) && numCheck(dice[1]) && dice.length == 2) {
 		// Roll an extra time if adv
 		if(adv != null && adv.toLowerCase() == 'adv') {
 			var advRoll = roll(message, dice, mod);
@@ -255,9 +253,9 @@ function roll(message, dice, mod) {
 
 	// If there is a mod, make absolutely sure mod and result are integers, and then add them together
 	if(mod) {
-		result = parseInt(result);
-		mod = parseInt(mod);
-		result = result + mod;
+		result = Number(result);
+		mod = Number(mod);
+		result += mod;
 	}
 	message.channel.send(result);
 	// If roll is 1d20 and result (sans mod) is 20, send congratulatory message
@@ -498,14 +496,12 @@ function initiative(message, args) {
 		if (args[1] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 		const dice = args[1].split("d");
 		const adv = args[2];
-		let roll = parseRoll(message, dice, adv);
-		roll = parseInt(roll);
-		if (!isNaN(roll)) { 
+		const roll = Number(parseRoll(message, dice, adv));
+		if (numCheck(roll)) { 
 			return addInitiative(message, roll); 
 		} else return;
 		case "rem":
-		let rank = parseInt(args[1]);
-		if (!isNaN(rank)) return removeInitiative(message, rank);
+		return removeInitiative(message, args[1]);
 	}
 	addInitiative(message, args[0]);
 }
@@ -517,7 +513,7 @@ function getInitiative(guild) {
 
 function addInitiative(message, init) {
 	if (init == null) return message.reply("You need to specify an initiative value!");
-	score = parseInt(init);
+	const score = Number(init);
 	if (isNaN(score)) return message.reply("Initiative needs to be a number!");
 	const initiative = getInitiative(message.guild.id);
 	initiative.push({player: message.member, score: init});
@@ -547,8 +543,9 @@ function clearInitiative(message) {
 
 function removeInitiative(message, rank) {
 	if (!isAdmin(message.member)) return message.reply("You don't have permission to do that!");
+	if (!numCheck(rank)) return message.reply("That initiative rank does not exist!");
 	const initiative = getInitiative(message.guild.id);
-	const index = rank -1;
+	const index = rank - 1;
 	if (!initiative[index]) return message.reply("That initiative rank does not exist!");
 	message.channel.send(wrap(`Removed ${nickOrUser(initiative[index].player)} from initiative.`));
 	initiative.splice(index, 1);
@@ -565,6 +562,14 @@ function isAdmin(member) {
 
 function nickOrUser(member) {
 	return (member.nickname ? member.nickname : member.user.username);
+}
+
+function numCheck(suspect) {
+	const check1 = parseInt(suspect);
+	const check2 = Number(suspect);
+	if (!isNaN(check1) && !isNaN(check2)) {
+		return true;
+	} else return false;
 }
 
 // catch unhandled promise rejections
