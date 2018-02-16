@@ -6,6 +6,7 @@ const token = auth.token;
 const fs = require('fs');
 const help = getHelp();
 const source = getSource();
+let initiatives = {};
 // ready message
 bot.on('ready', () => {
 	console.log('I am ready!');
@@ -33,7 +34,7 @@ bot.on('message', message => {
 
 	const mess = message.content.toLowerCase();
 
-	var isAdmin = message.member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
+	
 
 	// politeness
 	if(mess.includes('thanks, iris') || mess.includes('thanks iris') || mess.includes('thank you, iris') || mess.includes('thank you, iris')) {
@@ -145,7 +146,7 @@ bot.on('message', message => {
 			case "say":
 			if (!message.guild) break;
 
-			if (!isAdmin) {
+			if (!isAdmin(message.member)) {
 				message.reply("You don't have permission to tell me what to say!");
 			} else if (args[0] != null) {
 				const phrase = message.content.substring(5);
@@ -192,7 +193,6 @@ bot.on('message', message => {
 			* Use !leave to end recording.
 			*/
 			case "record":
-			if (!isAdmin) return message.reply("You don't have permission to do that!");
 			record(message);
 			break;
 
@@ -202,6 +202,10 @@ bot.on('message', message => {
 
 			case "resume":
 			resume(message);
+			break;
+
+			case "init":
+			initiative(message, args);
 			break;
 		}
 	}
@@ -231,9 +235,14 @@ function parseRoll(message, dice, adv) {
 	if (!isNaN(dice[0]) && !isNaN(dice[1]) && dice.length == 2) {
 		// Roll an extra time if adv
 		if(adv != null && adv.toLowerCase() == 'adv') {
-			roll(message, dice, mod);
+			var advRoll = roll(message, dice, mod);
 		}
-		roll(message, dice, mod);
+		var rolly = roll(message, dice, mod);
+		// return the higher of the two rolls if adv, else return roll
+		if (advRoll) {
+			var result = ((advRoll > rolly) ? advRoll : rolly);
+		} else result = rolly;
+		return result;
 	} else {
 		message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 	}
@@ -256,6 +265,7 @@ function roll(message, dice, mod) {
 		const nat20 = bot.emojis.find('name', 'nat20');
 		message.channel.send(`Natural 20! ${nat20}`);
 	}
+	return result;
 }
 
 // Roll x y-sided dice and total the outcomes. x is count and y is sides
@@ -363,6 +373,7 @@ function playURL(message, url) {
 }
 
 function record(message) {
+	if (!isAdmin(message.member)) return message.reply("You don't have permission to do that!");
 	if (message.member.voiceChannel) {
 		const voiceChannel = message.member.voiceChannel;
 		message.member.voiceChannel.join()
@@ -475,6 +486,85 @@ function resume(message) {
 	} else {
 		message.channel.send(wrap("Playback is not paused!"));
 	}
+}
+
+function initiative(message, args) {
+	switch(args[0]) {
+		case "list":
+		return listInitiative(message);
+		case "clear":
+		return clearInitiative(message);
+		case "roll": 
+		if (args[1] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
+		const dice = args[1].split("d");
+		const adv = args[2];
+		let roll = parseRoll(message, dice, adv);
+		roll = parseInt(roll);
+		if (!isNaN(roll)) { 
+			return addInitiative(message, roll); 
+		} else return;
+		case "rem":
+		let rank = parseInt(args[1]);
+		if (!isNaN(rank)) return removeInitiative(message, rank);
+	}
+	addInitiative(message, args[0]);
+}
+
+function getInitiative(guild) {
+	if (!initiatives[guild]) initiatives[guild] = [];
+	return initiatives[guild];
+}
+
+function addInitiative(message, init) {
+	if (init == null) return message.reply("You need to specify an initiative value!");
+	score = parseInt(init);
+	if (isNaN(score)) return message.reply("Initiative needs to be a number!");
+	const initiative = getInitiative(message.guild.id);
+	initiative.push({player: message.member, score: init});
+	initiative.sort(initCmp);
+	message.channel.send(wrap(`Added ${nickOrUser(message.member)} with initiative ${init}.`));
+}
+
+function initCmp(a, b) {
+	const scoreA = a.score;
+	const scoreB = b.score;
+	return scoreB - scoreA;
+}
+
+function listInitiative(message) {
+	const initiative = getInitiative(message.guild.id);
+	const items = initiative.map(mapFnc);
+	const list = items.join("\n");
+	message.channel.send(wrap("Initiative:\n" + list));
+}
+
+function clearInitiative(message) {
+	if (!isAdmin(message.member)) return message.reply("You don't have permission to do that!");
+	const initiative = getInitiative(message.guild.id);
+	initiative.splice(0, initiative.length);
+	message.channel.send(wrap("Initiative cleared!"));
+}
+
+function removeInitiative(message, rank) {
+	if (!isAdmin(message.member)) return message.reply("You don't have permission to do that!");
+	const initiative = getInitiative(message.guild.id);
+	const index = rank -1;
+	if (!initiative[index]) return message.reply("That initiative rank does not exist!");
+	message.channel.send(wrap(`Removed ${nickOrUser(initiative[index].player)} from initiative.`));
+	initiative.splice(index, 1);
+}
+
+function mapFnc(item, index) {
+	const entry = `${index + 1}. ${nickOrUser(item.player)} ${item.score}`;
+	return entry;
+}
+
+function isAdmin(member) {
+	return member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
+}
+
+function nickOrUser(member) {
+	return (member.nickname ? member.nickname : member.user.username);
 }
 
 // catch unhandled promise rejections
