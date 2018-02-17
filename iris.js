@@ -498,12 +498,59 @@ function initiative(message, args) {
 		const adv = args[2];
 		const roll = Number(parseRoll(message, dice, adv));
 		if (numCheck(roll)) { 
-			return addInitiative(message, roll); 
+			return addInitiative(message, nickOrUser(message.member), roll, true); 
 		} else return;
 		case "rem":
 		return removeInitiative(message, args[1]);
 	}
-	addInitiative(message, args[0]);
+	if (!numCheck(args[0])) {
+		if (!isAdmin(message.member)) return message.reply("You don't have permission to add NPCs to the initiative!");
+		var num = 1;
+		if (args[1] == "roll") {
+			if (args[2] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
+			const dice = args[2].split("d");
+			if (args[3] == "adv") {
+				if (numCheck(args[4])) num = args[4];
+				for (i = 0; i < num; i++) {
+					let roll = Number(parseRoll(message, dice, args[3]));
+					if (numCheck(roll)) {
+						if (num == 1) {
+							addInitiative(message, args[0], roll, false);
+						} else {
+							let name = `${args[0]} ${i + 1}`;
+							addInitiative(message, name, roll, false);
+						}
+					} else return;
+				}
+			} else {
+				if (numCheck(args[3])) num = args[3];
+				for (i = 0; i < num; i++) {
+					let roll = Number(parseRoll(message, dice, ""));
+					if (numCheck(roll)) {
+						if (num == 1) {
+							addInitiative(message, args[0], roll, false);
+						} else {
+							let name = `${args[0]} ${i + 1}`;
+							addInitiative(message, name, roll, false);
+						}
+					} else return;
+				}
+			}
+		} else {
+			if (numCheck(args[2])) num = args[2];
+			for (i = 0; i < num; i++) { 
+				if (num == 1) {
+					addInitiative(message, args[0], args[1], false);
+				} else {
+					let name = `${args[0]} ${i + 1}`;
+					addInitiative(message, name, args[1], false);
+				}
+			}
+			return;
+		}
+	} else {
+		addInitiative(message, nickOrUser(message.member), args[0], true);
+	}
 }
 
 function getInitiative(guild) {
@@ -511,14 +558,16 @@ function getInitiative(guild) {
 	return initiatives[guild];
 }
 
-function addInitiative(message, init) {
+function addInitiative(message, name, init, player) {
 	if (init == null) return message.reply("You need to specify an initiative value!");
 	const score = Number(init);
-	if (isNaN(score)) return message.reply("Initiative needs to be a number!");
+	if (!numCheck(score)) return message.reply("Initiative needs to be a number!");
 	const initiative = getInitiative(message.guild.id);
-	initiative.push({player: message.member, score: init});
+	if (player) {
+		initiative.push({name: name, score: init, player: message.member});
+	} else initiative.push({name: name, score: init, player: false});
 	initiative.sort(initCmp);
-	message.channel.send(wrap(`Added ${nickOrUser(message.member)} with initiative ${init}.`));
+	message.channel.send(wrap(`Added ${name} with initiative ${init}.`));
 }
 
 function initCmp(a, b) {
@@ -547,12 +596,12 @@ function removeInitiative(message, rank) {
 	const initiative = getInitiative(message.guild.id);
 	const index = rank - 1;
 	if (!initiative[index]) return message.reply("That initiative rank does not exist!");
-	message.channel.send(wrap(`Removed ${nickOrUser(initiative[index].player)} from initiative.`));
+	message.channel.send(wrap(`Removed ${initiative[index].name} from initiative.`));
 	initiative.splice(index, 1);
 }
 
 function mapFnc(item, index) {
-	const entry = `${index + 1}. ${nickOrUser(item.player)} ${item.score}`;
+	const entry = `${index + 1}. ${item.name} ${item.score}`;
 	return entry;
 }
 
