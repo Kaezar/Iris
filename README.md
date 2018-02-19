@@ -43,7 +43,11 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
 * !play url OR !play filename
   * url is the url of a youtube video or filename is the name of an audio file in the bot's audio folder.
   * Bot joins the voice channel the caller is in, and plays the audio of the youtube video or the file, then leaves the voice channel.
-* !say phrase
+* !pause
+  * Pauses currently playing audio.
+* !resume
+  * Resumes paused audio.
+* !say phrase (Admin only)
   * phrase is a text phrase for the bot to say
   * Bot joins the voice channel the caller is in, says the phrase (using a tts program), then leaves the voice channel.
 * !reminder channel time
@@ -57,5 +61,6 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
   * Bot response: list of commands (this one).
 * !source
   * Bot response: bot source code.
-* !record
+* !record (Admin only)
   * Bot joins the voice channel the caller is in, and begins recording any audio that is spoken on the channel. Stop recording with !leave.
+* !init num OR !init roll xdy+mod adv OR !init name num

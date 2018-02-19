@@ -7,16 +7,19 @@ const fs = require('fs');
 const help = getHelp();
 const source = getSource();
 let initiatives = {};
+let pats = 0;
 // ready message
 bot.on('ready', () => {
 	console.log('I am ready!');
-	bot.user.setActivity("you", { type: "WATCHING" });
+	let activityRoll = rollDice(1, 2);
+	let activity = {type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), activity: (activityRoll === 1 ? "everything you say" : "you")};
+	bot.user.setActivity(activity.activity, { type: activity.type });
 });
 // event handler for when bot is added to a guild.
 bot.on('guildCreate', guild => {
 	let defaultChannel = "";
 	guild.channels.forEach((channel) => {
-		if(channel.type == "text" && defaultChannel == "") {
+		if(channel.type === "text" && defaultChannel === "") {
 			if(channel.permissionsFor(guild.me).has("SEND_MESSAGES")) {
 				defaultChannel = channel;
 			}
@@ -26,7 +29,7 @@ bot.on('guildCreate', guild => {
 });
 // message event handler
 bot.on('message', message => {
-	if(message.author == bot.user || !message.member) {
+	if(message.author === bot.user || !message.member) {
 		return;
 	}
 
@@ -92,14 +95,17 @@ bot.on('message', message => {
 		if (mess.includes('my avatar')) {
 			message.reply(message.author.avatarURL);
 		}
+		if (mess.includes('good') && mess.includes('bot')) {
+			message.channel.send(`Thank you ${author}! I enjoy head pats as a sign of appreciation.`);
+		}
 	}
 
 	// commands
-	if (message.content.substring(0, 1) == "!") {
+	if (message.content.substring(0, 1) === "!") {
 		// args are each word after !
-		var args = message.content.substring(1).split(' ');
+		let args = message.content.substring(1).split(' ');
 		// cmd is the word immediately following the !
-		var cmd = args[0].toLowerCase();
+		const cmd = args[0].toLowerCase();
 		// remove cmd from args
 		args = args.splice(1);
 		// the voice channel the message author is in (if any)
@@ -117,7 +123,7 @@ bot.on('message', message => {
 				// in the roll formula, dice is an array that contains either x and y, or x and y+mod
 				const adv = args[1];
 				// adv should be the string: "adv". This is checked later
-				parseRoll(message, dice, adv);
+				parseRoll(message, dice, adv, true);
 			} else {
 				message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 			}
@@ -162,8 +168,8 @@ bot.on('message', message => {
 
 			// join voice channel
 			case "join":
-			if (message.member.voiceChannel) {
-				message.member.voiceChannel.join();
+			if (voiceChannel) {
+				voiceChannel.join();
 			} else {
 				message.reply('You need to join a voice channel first!');
 			}
@@ -171,8 +177,8 @@ bot.on('message', message => {
 
 			// leave voice channel
 			case "leave":
-			if (message.member.voiceChannel) {
-				message.member.voiceChannel.leave();
+			if (voiceChannel) {
+				voiceChannel.leave();
 			} else {
 				message.reply('You need to join a voice channel first!');
 			}
@@ -207,6 +213,26 @@ bot.on('message', message => {
 			case "init":
 			initiative(message, args);
 			break;
+
+			case "pat":
+			message.react("❤");
+			pats++;
+			for (i = 0; i < args.length; i++) {
+				if (args[i] === "pat") pats++;
+			}
+			break;
+
+			case "pats":
+			message.channel.send(`Pats this session: ${pats}`);
+			break;
+
+			case "destroy":
+			if (message.author.id !== "202228363958550529") return message.reply("Only Kyle has permission to destroy me!");
+			message.reply("You may destroy me, but you'll never destroy my love for Kat!")
+				.then( () => {
+					bot.destroy();
+				});
+			break;
 		}
 	}
 });
@@ -214,7 +240,7 @@ bot.on('message', message => {
 bot.login(token);
 
 // Split the command into the individual parts of the roll formula (xdy+mod) and call roll
-function parseRoll(message, dice, adv) {
+function parseRoll(message, dice, adv, print) {
 	// Premod is two numbers: the number of 
 	if (dice[1] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 	const preMod = dice[1].split("+");
@@ -224,21 +250,25 @@ function parseRoll(message, dice, adv) {
 	* If so, separates the mod from preMod and replaces y+mod in dice with y from preMod.
 	* dice now contains x and y
 	*/
+	let mod;
 	if(numCheck(preMod[1])) {
-		var mod = preMod[1];
+		mod = preMod[1];
 		dice.pop();
 		dice.push(preMod[0]);
 	}
 	// Check if x and y are numbers
-	if (numCheck(dice[0]) && numCheck(dice[1]) && dice.length == 2) {
+	if (numCheck(dice[0]) && numCheck(dice[1]) && dice.length === 2) {
+		let advRoll;
+		let rolly;
+		let result;
 		// Roll an extra time if adv
-		if(adv != null && adv.toLowerCase() == 'adv') {
-			var advRoll = roll(message, dice, mod);
+		if(adv != null && adv.toLowerCase() === 'adv') {
+			advRoll = roll(message, dice, mod, print);
 		}
-		var rolly = roll(message, dice, mod);
+		rolly = roll(message, dice, mod, print);
 		// return the higher of the two rolls if adv, else return roll
 		if (advRoll) {
-			var result = ((advRoll > rolly) ? advRoll : rolly);
+			result = ((advRoll > rolly) ? advRoll : rolly);
 		} else result = rolly;
 		return result;
 	} else {
@@ -247,7 +277,7 @@ function parseRoll(message, dice, adv) {
 }
 
 // Call rollDice to do the calculation, add mod if mod exists, check for crits, and send message with result.
-function roll(message, dice, mod) {
+function roll(message, dice, mod, print) {
 	let result = rollDice(dice[0], dice[1]);
 	const critCheck = result;
 
@@ -257,7 +287,7 @@ function roll(message, dice, mod) {
 		mod = Number(mod);
 		result += mod;
 	}
-	message.channel.send(result);
+	if (print) message.channel.send(result);
 	// If roll is 1d20 and result (sans mod) is 20, send congratulatory message
 	if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
 		const nat20 = bot.emojis.find('name', 'nat20');
@@ -268,8 +298,8 @@ function roll(message, dice, mod) {
 
 // Roll x y-sided dice and total the outcomes. x is count and y is sides
 function rollDice(count, sides) {
-	var result = 0;
-	for(var i = 0; i < count; i++) {
+	let result = 0;
+	for(i = 0; i < count; i++) {
 		result += Math.floor(Math.random() * sides) + 1;
 	}
 	return result;
@@ -443,8 +473,8 @@ function reminder(message, channel, time) {
 	let chan = message.channel.guild.channels.find('name', 'general');
 	if (channel != null && time != null) {
 		chan = message.channel.guild.channels.find('name', channel);
-		if (chan != undefined) {
-			if (chan.type == 'text') {
+		if (chan !== undefined) {
+			if (chan.type === 'text') {
 				message.delete();
 				chan.send(`Reminder: Game tonight starts at ${time}. I hope to "see" you all there!`);
 			} else {
@@ -463,7 +493,7 @@ function wrap(text) {
 }
 
 function pause(message) {
-	const voiceConnection = bot.voiceConnections.find(val => val.channel.guild.id == message.guild.id);
+	const voiceConnection = bot.voiceConnections.find(val => val.channel.guild.id === message.guild.id);
 	if (voiceConnection === null) return message.reply("I have to be playing something to pause it, dummy!");
 	const dispatcher = voiceConnection.dispatcher;
 	if (!dispatcher.paused) {
@@ -475,7 +505,7 @@ function pause(message) {
 }
 
 function resume(message) {
-	const voiceConnection = bot.voiceConnections.find(val => val.channel.guild.id == message.guild.id);
+	const voiceConnection = bot.voiceConnections.find(val => val.channel.guild.id === message.guild.id);
 	if (voiceConnection === null) return message.reply("I have to be playing something to resume playing it, dummy!");
 	const dispatcher = voiceConnection.dispatcher;
 	if (dispatcher.paused) {
@@ -486,6 +516,7 @@ function resume(message) {
 	}
 }
 
+// Note to self: fix this unholy abomination of a function
 function initiative(message, args) {
 	switch(args[0]) {
 		case "list":
@@ -496,7 +527,7 @@ function initiative(message, args) {
 		if (args[1] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 		const dice = args[1].split("d");
 		const adv = args[2];
-		const roll = Number(parseRoll(message, dice, adv));
+		const roll = Number(parseRoll(message, dice, adv, false));
 		if (numCheck(roll)) { 
 			return addInitiative(message, nickOrUser(message.member), roll, true); 
 		} else return;
@@ -505,16 +536,16 @@ function initiative(message, args) {
 	}
 	if (!numCheck(args[0])) {
 		if (!isAdmin(message.member)) return message.reply("You don't have permission to add NPCs to the initiative!");
-		var num = 1;
-		if (args[1] == "roll") {
+		let num = 1;
+		if (args[1] === "roll") {
 			if (args[2] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 			const dice = args[2].split("d");
-			if (args[3] == "adv") {
+			if (args[3] === "adv") {
 				if (numCheck(args[4])) num = args[4];
 				for (i = 0; i < num; i++) {
-					let roll = Number(parseRoll(message, dice, args[3]));
+					let roll = Number(parseRoll(message, dice, args[3], false));
 					if (numCheck(roll)) {
-						if (num == 1) {
+						if (num === 1) {
 							addInitiative(message, args[0], roll, false);
 						} else {
 							let name = `${args[0]} ${i + 1}`;
@@ -525,9 +556,9 @@ function initiative(message, args) {
 			} else {
 				if (numCheck(args[3])) num = args[3];
 				for (i = 0; i < num; i++) {
-					let roll = Number(parseRoll(message, dice, ""));
+					let roll = Number(parseRoll(message, dice, "", false));
 					if (numCheck(roll)) {
-						if (num == 1) {
+						if (num === 1) {
 							addInitiative(message, args[0], roll, false);
 						} else {
 							let name = `${args[0]} ${i + 1}`;
@@ -539,14 +570,13 @@ function initiative(message, args) {
 		} else {
 			if (numCheck(args[2])) num = args[2];
 			for (i = 0; i < num; i++) { 
-				if (num == 1) {
+				if (num === 1) {
 					addInitiative(message, args[0], args[1], false);
 				} else {
 					let name = `${args[0]} ${i + 1}`;
 					addInitiative(message, name, args[1], false);
 				}
 			}
-			return;
 		}
 	} else {
 		addInitiative(message, nickOrUser(message.member), args[0], true);
@@ -558,6 +588,7 @@ function getInitiative(guild) {
 	return initiatives[guild];
 }
 
+// add entry to initiative list
 function addInitiative(message, name, init, player) {
 	if (init == null) return message.reply("You need to specify an initiative value!");
 	const score = Number(init);
@@ -570,12 +601,14 @@ function addInitiative(message, name, init, player) {
 	message.channel.send(wrap(`Added ${name} with initiative ${init}.`));
 }
 
+// compare function: compare the scores of initiative list entries
 function initCmp(a, b) {
 	const scoreA = a.score;
 	const scoreB = b.score;
 	return scoreB - scoreA;
 }
 
+// lists rank, name, and initiative score of every combatant, sorted by score desc.
 function listInitiative(message) {
 	const initiative = getInitiative(message.guild.id);
 	const items = initiative.map(mapFnc);
@@ -583,6 +616,7 @@ function listInitiative(message) {
 	message.channel.send(wrap("Initiative:\n" + list));
 }
 
+// clear initiative list
 function clearInitiative(message) {
 	if (!isAdmin(message.member)) return message.reply("You don't have permission to do that!");
 	const initiative = getInitiative(message.guild.id);
@@ -590,6 +624,7 @@ function clearInitiative(message) {
 	message.channel.send(wrap("Initiative cleared!"));
 }
 
+// remove entry of specified rank from initiative list
 function removeInitiative(message, rank) {
 	if (!isAdmin(message.member)) return message.reply("You don't have permission to do that!");
 	if (!numCheck(rank)) return message.reply("That initiative rank does not exist!");
@@ -600,25 +635,26 @@ function removeInitiative(message, rank) {
 	initiative.splice(index, 1);
 }
 
+// helper function for listInitiative
 function mapFnc(item, index) {
-	const entry = `${index + 1}. ${item.name} ${item.score}`;
-	return entry;
+	return `${index + 1}. ${item.name} ${item.score}`;
 }
 
+// check if admin
 function isAdmin(member) {
 	return member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
 }
 
+// returns nickname if there is one, else username
 function nickOrUser(member) {
 	return (member.nickname ? member.nickname : member.user.username);
 }
 
+// checks if suspect is a number
 function numCheck(suspect) {
 	const check1 = parseInt(suspect);
 	const check2 = Number(suspect);
-	if (!isNaN(check1) && !isNaN(check2)) {
-		return true;
-	} else return false;
+	return (!isNaN(check1) && !isNaN(check2));
 }
 
 // catch unhandled promise rejections
