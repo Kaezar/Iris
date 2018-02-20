@@ -45,7 +45,7 @@ bot.on('message', message => {
 	}
 
 	// greeting
-	if(mess.includes('hello, iris') || mess.includes('hello iris')) {
+	if(mess.includes('hello') && mess.includes('iris')) {
 		message.channel.send(`Hello ${author}`);
 	}
 
@@ -537,45 +537,31 @@ function initiative(message, args) {
 	if (!numCheck(args[0])) {
 		if (!isAdmin(message.member)) return message.reply("You don't have permission to add NPCs to the initiative!");
 		let num = 1;
+		let roll;
+		let adv = "";
+		let name;
+		let dice;
 		if (args[1] === "roll") {
 			if (args[2] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
-			const dice = args[2].split("d");
+			dice = args[2].split("d");
 			if (args[3] === "adv") {
+				adv = args[3];
 				if (numCheck(args[4])) num = args[4];
-				for (i = 0; i < num; i++) {
-					let roll = Number(parseRoll(message, dice, args[3], false));
-					if (numCheck(roll)) {
-						if (num === 1) {
-							addInitiative(message, args[0], roll, false);
-						} else {
-							let name = `${args[0]} ${i + 1}`;
-							addInitiative(message, name, roll, false);
-						}
-					} else return;
-				}
-			} else {
-				if (numCheck(args[3])) num = args[3];
-				for (i = 0; i < num; i++) {
-					let roll = Number(parseRoll(message, dice, "", false));
-					if (numCheck(roll)) {
-						if (num === 1) {
-							addInitiative(message, args[0], roll, false);
-						} else {
-							let name = `${args[0]} ${i + 1}`;
-							addInitiative(message, name, roll, false);
-						}
-					} else return;
-				}
-			}
+			} else if (numCheck(args[3])) num = args[3];
 		} else {
 			if (numCheck(args[2])) num = args[2];
-			for (i = 0; i < num; i++) { 
-				if (num === 1) {
-					addInitiative(message, args[0], args[1], false);
-				} else {
-					let name = `${args[0]} ${i + 1}`;
-					addInitiative(message, name, args[1], false);
-				}
+			roll = args[1];
+		}
+		for (i = 0; i < num; i++) {
+			if (dice) {
+				roll = Number(parseRoll(message, dice, adv, false));
+				if (!numCheck(roll)) return;
+			}
+			if (num === 1) {
+				addInitiative(message, args[0], roll, false);
+			} else {
+				name = `${args[0]} ${i + 1}`;
+				addInitiative(message, name, roll, false);
 			}
 		}
 	} else {
