@@ -2,10 +2,12 @@ const iris = require('../iris.js');
 module.exports = {
     name: 'say',
     description: 'Say something.',
+    args: true,
+    usage: '<phrase>',
+    guildOnly: true,
     execute(message, args) {
         if (!message.guild) return;
 		if (!iris.isAdmin(message.member)) return message.reply("You don't have permission to tell me what to say!");
-		if (args[0] == null) return message.reply("You need to specify a phrase for me to say!");
 
 		const phrase = message.content.substring(5);
 

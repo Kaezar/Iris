@@ -2,9 +2,10 @@ const iris = require('../iris.js');
 module.exports = {
     name: 'play',
     description: 'Play youtube audio or audio file.',
+    args: true,
+    usage: '<url> or <filename>',
+    guildOnly: true,
     execute(message, args) {
-        if (args[0] == null) return message.reply("You need to specify the url of a youtube video or the name of a file to play!");
-
 		if (ytdl.validateURL(args[0])) {
 			const url = String(args[0]);
 			this.playURL(message, url);

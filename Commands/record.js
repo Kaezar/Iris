@@ -2,6 +2,7 @@ const iris = require('../iris.js');
 var recorder = module.exports = {
     name: 'record',
     description: 'record audio.',
+    guildOnly: true,
     execute(message, args) {
         if (!iris.isAdmin(message.member)) return message.reply("You don't have permission to do that!");
 		if (message.member.voiceChannel) {

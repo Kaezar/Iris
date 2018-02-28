@@ -2,6 +2,8 @@ const iris = require('../iris.js');
 var roller = module.exports = {
 	name: 'roll',
 	description: 'Roll dice.',
+    args: true,
+    usage: '<x>d<y>+<mod> adv (+<mod> and adv optional)',
 	execute(message, args) {
 		const dice = args[0].split("d");
 		// in the roll formula, dice is an array that contains either x and y, or x and y+mod

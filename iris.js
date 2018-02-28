@@ -43,7 +43,7 @@ bot.on('guildCreate', guild => {
 });
 // message event handler
 bot.on('message', message => {
-	if(message.author === bot.user || !message.member) return;
+	if(message.author === bot.user) return;
 
 	const author = message.author;
 
@@ -133,6 +133,18 @@ bot.on('message', message => {
 		if (!bot.commands.has(cmd)) return;
 
 		const command = bot.commands.get(cmd);
+
+		if (command.guildOnly && !message.member) {
+    		return message.reply('I can\'t execute that command inside DMs!');
+		}
+
+		if (command.args && !args.length) {
+			let reply = 'You need to provide arguments for that command!';
+			if (command.usage) {
+				reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
+			}
+			return message.reply(reply);
+		} 
 
 		try {
     		command.execute(message, args);

@@ -2,7 +2,8 @@ const iris = require('../iris.js');
 module.exports = {
     name: 'source',
     description: 'Send source',
-    execute(message, args) {
+    args: false,
+    execute(message) {
         message.channel.send(iris.source, { code: 'javascript', split: true });
     },
 };
