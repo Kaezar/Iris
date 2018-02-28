@@ -63,5 +63,3 @@ The command keyword is not case-sensitive, but the subsequent arguments are.
   * Bot response: bot source code.
 * !record (Admin only)
   * Bot joins the voice channel the caller is in, and begins recording any audio that is spoken on the channel. Stop recording with !leave.
-* !init num hp OR !init roll xdy+mod adv OR !init name num OR !init name roll xdy+mod adv count
-  * num is an initiative value (higher goes first). roll and xdy+mod (as in !roll, adv optional) can be substituted for num. hp is an optional hit point value. name can be specified before num or roll to add an NPC to the list (admin only). count (optional) specifies how many named NPCs to add.
