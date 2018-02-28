@@ -1,6 +1,6 @@
 module.exports = {
     name: 'leave',
-    description: 'leave voice channel.',
+    description: 'Leave voice channel.',
     guildOnly: true,
     execute(message, args) {
         if (message.member.voiceChannel) {

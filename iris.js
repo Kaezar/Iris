@@ -1,7 +1,6 @@
 const Discord = require("discord.js");
 const ytdl = require("ytdl-core");
 const bot = new Discord.Client();
-exports.bot = bot;
 const auth = require("./auth.json");
 const token = auth.token;
 const fs = require('fs');
@@ -10,6 +9,7 @@ exports.help = help;
 const source = getSource();
 exports.source = source;
 const prefix = '!';
+exports.prefix = prefix;
 
 // get commands
 bot.commands = new Discord.Collection();
@@ -138,6 +138,10 @@ bot.on('message', message => {
     		return message.reply('I can\'t execute that command inside DMs!');
 		}
 
+		// check permissions
+		if (command.adminOnly && !isAdmin(author)) return message.reply('You don\'t have permission to use that command!');
+		if (command.kyleOnly && message.author.id !== "202228363958550529") return message.reply('Only Kyle has permission to use that command!');
+
 		if (command.args && !args.length) {
 			let reply = 'You need to provide arguments for that command!';
 			if (command.usage) {
@@ -180,6 +184,10 @@ function getHelp() {
 	return child;
 }
 
+function isAdmin(member) {
+	return member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
+}
+
 function rollDice(count, sides) {
 	let result = 0;
 	for(let i = 0; i < count; i++) {
@@ -188,10 +196,6 @@ function rollDice(count, sides) {
 	return result;
 }
 exports.rollDice = rollDice;
-
-exports.isAdmin = function isAdmin(member) {
-	return member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
-}
 
 exports.numCheck = function numCheck(suspect) {
 	const check1 = parseInt(suspect);

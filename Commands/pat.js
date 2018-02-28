@@ -1,6 +1,6 @@
 var pat = module.exports = {
     name: 'pat',
-    description: 'Head pat.',
+    description: 'Gives a head pat. Additional pats after first increase count accordingly.',
     pats: 0,
     execute(message, args) {
         message.react("❤");

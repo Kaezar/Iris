@@ -1,7 +1,7 @@
 const iris = require('../iris.js');
 module.exports = {
     name: 'reminder',
-    description: 'game reminder.',
+    description: 'Game reminder.',
     args: true,
     usage: '<channel> <time>',
     guildOnly: true,
