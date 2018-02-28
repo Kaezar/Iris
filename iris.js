@@ -40,7 +40,7 @@ bot.on('message', message => {
 	
 
 	// politeness
-	if(mess.includes('thanks, iris') || mess.includes('thanks iris') || mess.includes('thank you, iris') || mess.includes('thank you, iris')) {
+	if(mess.includes('thanks, iris') || mess.includes('thanks iris') || mess.includes('thank you iris') || mess.includes('thank you, iris')) {
 		message.channel.send(`You're welcome, ${author}`);
 	}
 
@@ -66,11 +66,21 @@ bot.on('message', message => {
 
 	// responds with user avatar image
 	if(mess.includes('what is my avatar') || mess.includes("what's my avatar") || mess.includes("what does my avatar look like")) {
-		message.reply(message.author.avatarURL);
+		return message.reply(message.author.avatarURL);
+
 	}
 
 	if(mess.includes('what is your avatar iris') || mess.includes('what is your avatar, iris') || mess.includes('iris what is your avatar') || mess.includes('iris, what is your avatar')) {
-		message.reply(bot.user.avatarURL);
+		return message.reply(bot.user.avatarURL);
+	}
+
+	if(mess.includes('bepis')) {
+		const bepis = bot.emojis.find('name', 'BEPIS');
+		message.react(bepis);
+	}
+
+	if(mess.includes('blood for the blood god')) {
+		message.channel.send('Skulls for the skull throne!');
 	}
 
 	if (message.mentions.users.find('username', 'Iris')) {
@@ -526,10 +536,18 @@ function initiative(message, args) {
 		case "roll": 
 		if (args[1] == null) return message.reply("You need to give a valid dice roll of the form: xdy+mod (+mod optional)!");
 		const dice = args[1].split("d");
-		const adv = args[2];
+		let adv;
+		let hitPoints;
+		if (args[2] === "adv") {
+			adv = args[2];
+		} else {
+			hitPoints = args[2];
+			adv = args[3];
+			if ((hitPoints !== undefined) && (!numCheck(hitPoints))) return message.reply("Not a valid hit point value!");
+		}
 		const roll = Number(parseRoll(message, dice, adv, false));
 		if (numCheck(roll)) { 
-			return addInitiative(message, nickOrUser(message.member), roll, true); 
+			return addInitiative(message, nickOrUser(message.member), roll, true, hitPoints); 
 		} else return;
 		case "rem":
 		return removeInitiative(message, args[1]);
@@ -565,7 +583,9 @@ function initiative(message, args) {
 			}
 		}
 	} else {
-		addInitiative(message, nickOrUser(message.member), args[0], true);
+		const hitPoints = args[1];
+		if ((hitPoints !== undefined) && (!numCheck(hitPoints))) return message.reply("Not a valid hit point value!");
+		addInitiative(message, nickOrUser(message.member), args[0], true, hitPoints);
 	}
 }
 
@@ -575,15 +595,16 @@ function getInitiative(guild) {
 }
 
 // add entry to initiative list
-function addInitiative(message, name, init, player) {
+function addInitiative(message, name, init, player, hitPoints) {
 	if (init == null) return message.reply("You need to specify an initiative value!");
 	const score = Number(init);
 	if (!numCheck(score)) return message.reply("Initiative needs to be a number!");
 	const initiative = getInitiative(message.guild.id);
 	if (player) {
-		initiative.push({name: name, score: init, player: message.member});
-	} else initiative.push({name: name, score: init, player: false});
+		initiative.push({name: name, score: init, player: message.member, hp: hitPoints});
+	} else initiative.push({name: name, score: init, player: false, hp: hitPoints});
 	initiative.sort(initCmp);
+	if (hitPoints) message.channel.send(wrap(`Added ${name} with initiative ${init}.`));
 	message.channel.send(wrap(`Added ${name} with initiative ${init}.`));
 }
 
@@ -623,7 +644,12 @@ function removeInitiative(message, rank) {
 
 // helper function for listInitiative
 function mapFnc(item, index) {
-	return `${index + 1}. ${item.name} ${item.score}`;
+	if (item.hp) return `${index + 1}. ${item.name} ${item.hp}HP`
+	else return `${index + 1}. ${item.name}`;
+}
+
+function modifyHitpoints(message, val, set) {
+
 }
 
 // check if admin
