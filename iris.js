@@ -1,7 +1,8 @@
 const Discord = require("discord.js");
 const ytdl = require("ytdl-core");
-const bot = new Discord.Client();
 const auth = require("./auth.json");
+const Sequelize = require("sequelize");
+const bot = new Discord.Client();
 const token = auth.token;
 const fs = require('fs');
 const help = getHelp();
@@ -10,6 +11,31 @@ const source = getSource();
 exports.source = source;
 const prefix = '!';
 exports.prefix = prefix;
+const database = auth.database;
+const user = auth.user;
+const password = auth.password;
+
+const sequelize = new Sequelize(database, user, password, {
+	host: 'localhost',
+	dialect: 'mysql',
+	logging: false,
+	operatorsAliases: false,
+});
+
+const Rolls = sequelize.define('rolls', {
+	name: {
+		type: Sequelize.STRING,
+		unique: 'compositeIndex',
+	},
+	roll: Sequelize.STRING,
+	user_name: Sequelize.STRING,
+	user_id: {
+		type: Sequelize.STRING,
+		unique: 'compositeIndex',
+	},
+});
+exports.Rolls = Rolls;
+
 
 // get commands
 bot.commands = new Discord.Collection();
@@ -23,11 +49,12 @@ for (const file of commandFiles) {
 }
 
 // ready message
-bot.on('ready', () => {
-	console.log('I am ready!');
+bot.once('ready', () => {
 	let activityRoll = rollDice(1, 2);
 	let activity = {type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), activity: (activityRoll === 1 ? "everything you say" : "you")};
 	bot.user.setActivity(activity.activity, { type: activity.type });
+	Rolls.sync();
+	console.log('I am ready!');
 });
 // event handler for when bot is added to a guild.
 bot.on('guildCreate', guild => {
@@ -203,8 +230,10 @@ exports.numCheck = function numCheck(suspect) {
 	return (!isNaN(check1) && !isNaN(check2));
 }
 
-exports.wrap = function wrap(text) {
+function wrap(text) {
 	return '```\n' + text.replace(/`/g, '`' + String.fromCharCode(8203)) + '\n```';
 }
+exports.wrap = wrap;
+
 // catch unhandled promise rejections
 process.on('unhandledRejection', error => console.error(`Uncaught Promise Rejection:\n${error}`));

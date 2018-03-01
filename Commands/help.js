@@ -9,8 +9,8 @@ module.exports = {
     	const prefix = iris.prefix;
         if (!args.length) {
         	data.push('Here\'s a list of all my commands:');
-			data.push(commands.map(command => command.name).join(', '));
-			data.push(`\nYou can send \`${prefix}help <command>\` to get info on a specific command!`);
+			data.push(iris.wrap(commands.map(command => command.name).join(', ')));
+			data.push(`You can send \`${prefix}help <command>\` to get info on a specific command!`);
         } else {
         	if (message.channel.type !== 'dm') return message.reply('Please send inquiries on specific commands using a DM!');
         	if (!commands.has(args[0])) return message.reply('that\'s not a valid command!');

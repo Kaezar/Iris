@@ -6,6 +6,9 @@ module.exports = {
 		message.reply("You may destroy me, but you'll never destroy my love for Kat!")
 			.then( () => {
 				message.client.destroy();
+			})
+			.catch((error) => {
+				console.log(error);
 			});
     },
 };
