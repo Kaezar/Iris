@@ -27,7 +27,7 @@ module.exports = {
 					user_id: message.author.id,
 				})
 					.then(() => {
-						return message.channel.send(wrap(`Added ${rollName}: ${args[1]}`));
+						return message.channel.send(iris.wrap(`Added ${rollName}: ${args[1]}`));
 					})
 					.catch((error) => {
 						if (error.name === 'SequelizeUniqueConstraintError') {

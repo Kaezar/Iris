@@ -1,19 +1,15 @@
 const Discord = require("discord.js");
 const ytdl = require("ytdl-core");
-const auth = require("./auth.json");
+const {token, database, user, password} = require("./auth.json");
 const Sequelize = require("sequelize");
-const bot = new Discord.Client();
-const token = auth.token;
 const fs = require('fs');
+const bot = new Discord.Client();
 const help = getHelp();
 exports.help = help;
 const source = getSource();
 exports.source = source;
 const prefix = '!';
 exports.prefix = prefix;
-const database = auth.database;
-const user = auth.user;
-const password = auth.password;
 
 const sequelize = new Sequelize(database, user, password, {
 	host: 'localhost',
@@ -49,7 +45,7 @@ for (const file of commandFiles) {
 }
 
 // ready message
-bot.once('ready', () => {
+bot.on('ready', () => {
 	let activityRoll = rollDice(1, 2);
 	let activity = {type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), activity: (activityRoll === 1 ? "everything you say" : "you")};
 	bot.user.setActivity(activity.activity, { type: activity.type });

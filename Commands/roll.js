@@ -45,7 +45,7 @@ var roller = module.exports = {
 			dice.pop();
 			dice.push(preMod[0]);
 		}
-		
+
 		let advRoll;
 		let rolly;
 		let result;
@@ -70,7 +70,8 @@ var roller = module.exports = {
 			mod = Number(mod);
 			result += mod;
 		}
-		message.channel.send(iris.wrap(result));
+
+		message.channel.send(iris.wrap(String(result)));
 		// If roll is 1d20 and result (sans mod) is 20, send congratulatory message
 		if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
 			const nat20 = message.client.emojis.find('name', 'nat20');
