@@ -5,6 +5,7 @@
   "main": "iris.js",
   "author": "Kyle Drum",
   "dependencies": {
+    "@google-cloud/translate": "^1.1.0",
     "bufferutil": "^3.0.3",
     "discord.js": "^11.3.0",
     "erlpack": "github:hammerandchisel/erlpack",

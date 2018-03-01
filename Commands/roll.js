@@ -5,9 +5,7 @@ var roller = module.exports = {
     args: true,
     usage: '<x>d<y>+<mod> adv (+<mod> and adv optional) or <saved roll name> adv (adv optional)',
 	execute(message, args) {
-		console.log(`args: ${args}`);
 		check = roller.diceCheck(message, args);
-		console.log('check: ' + check);
 		if (!check) {
 			iris.Rolls.findOne({ where: {
 				name: args[0],

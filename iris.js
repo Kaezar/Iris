@@ -1,23 +1,25 @@
 const Discord = require("discord.js");
 const ytdl = require("ytdl-core");
-const {token, database, user, password} = require("./auth.json");
 const Sequelize = require("sequelize");
+const Translate = require('@google-cloud/translate');
 const fs = require('fs');
+const {token, database, user, password} = require("./auth.json");
 const bot = new Discord.Client();
-const help = getHelp();
-exports.help = help;
 const source = getSource();
 exports.source = source;
 const prefix = '!';
 exports.prefix = prefix;
 
+const translate = new Translate();
+exports.translate = translate;
+
+// initialize database/model
 const sequelize = new Sequelize(database, user, password, {
 	host: 'localhost',
 	dialect: 'mysql',
 	logging: false,
 	operatorsAliases: false,
 });
-
 const Rolls = sequelize.define('rolls', {
 	name: {
 		type: Sequelize.STRING,
@@ -189,17 +191,6 @@ function getSource() {
 	const execSync = require('child_process').execSync;
 	var child = execSync('cat iris.js', (error, stdout, stderr) => {
 		if(error) {
-			console.error(stderr);
-			return;
-		}
-	});
-	return child;
-}
-
-function getHelp() {
-	const execSync = require('child_process').execSync;
-	var child = execSync("sed -n -e '/Command/,$p' README.md", (error, stdout, stderr) => {
-		if (error) {
 			console.error(stderr);
 			return;
 		}

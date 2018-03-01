@@ -5,8 +5,8 @@ module.exports = {
     args: true,
     usage: '<name> <x>d<y>+<mod> (+mod optional)',
     execute(message, args) {
-        const rollName = args[0];
-        const dice = args[1].split('d');
+    	const [rollName, dice] = args;
+    	dice.split('d');
 
         if (dice[1] == null) {
         	return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
