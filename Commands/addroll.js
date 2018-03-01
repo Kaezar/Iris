@@ -1,12 +1,13 @@
 const iris = require('../iris.js');
+const Rolls = require('../dbObjects.js');
 module.exports = {
     name: 'addroll',
     description: 'Add a custom roll to the database.',
     args: true,
     usage: '<name> <x>d<y>+<mod> (+mod optional)',
     execute(message, args) {
-    	const [rollName, dice] = args;
-    	dice.split('d');
+    	const rollName = args[0];
+    	const dice = args[1].split('d');
 
         if (dice[1] == null) {
         	return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
@@ -20,7 +21,7 @@ module.exports = {
 		}
 		if (iris.numCheck(dice[0]) && iris.numCheck(dice[1]) && dice.length === 2) {
 			// add roll to DB
-			iris.Rolls.create({
+			Rolls.create({
 					name: rollName,
 					roll: args[1],
 					user_name: message.author.username,

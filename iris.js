@@ -3,7 +3,7 @@ const ytdl = require("ytdl-core");
 const Sequelize = require("sequelize");
 const Translate = require('@google-cloud/translate');
 const fs = require('fs');
-const {token, database, user, password} = require("./auth.json");
+const { token } = require("./auth.json");
 const bot = new Discord.Client();
 const source = getSource();
 exports.source = source;
@@ -12,27 +12,6 @@ exports.prefix = prefix;
 
 const translate = new Translate();
 exports.translate = translate;
-
-// initialize database/model
-const sequelize = new Sequelize(database, user, password, {
-	host: 'localhost',
-	dialect: 'mysql',
-	logging: false,
-	operatorsAliases: false,
-});
-const Rolls = sequelize.define('rolls', {
-	name: {
-		type: Sequelize.STRING,
-		unique: 'compositeIndex',
-	},
-	roll: Sequelize.STRING,
-	user_name: Sequelize.STRING,
-	user_id: {
-		type: Sequelize.STRING,
-		unique: 'compositeIndex',
-	},
-});
-exports.Rolls = Rolls;
 
 
 // get commands
@@ -51,7 +30,6 @@ bot.on('ready', () => {
 	let activityRoll = rollDice(1, 2);
 	let activity = {type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), activity: (activityRoll === 1 ? "everything you say" : "you")};
 	bot.user.setActivity(activity.activity, { type: activity.type });
-	Rolls.sync();
 	console.log('I am ready!');
 });
 // event handler for when bot is added to a guild.

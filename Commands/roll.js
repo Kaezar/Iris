@@ -1,4 +1,5 @@
 const iris = require('../iris.js');
+const Rolls = require('../dbObjects.js');
 var roller = module.exports = {
 	name: 'roll',
 	description: 'Roll dice.',
@@ -7,7 +8,7 @@ var roller = module.exports = {
 	execute(message, args) {
 		check = roller.diceCheck(message, args);
 		if (!check) {
-			iris.Rolls.findOne({ where: {
+			Rolls.findOne({ where: {
 				name: args[0],
 				user_id: message.author.id,
 			}})

@@ -1,14 +1,15 @@
 const iris = require('../iris.js');
+const Rolls = require('../dbObjects.js');
 module.exports = {
     name: 'editroll',
     description: 'Edit a custom roll.',
     args: true,
     usage: '<name> <x>d<y>+<mod> (+mod optional)',
     execute(message, args) {
-        const [rollName, dice] = args;
-    	dice.split('d');
+        const rollName = args[0];
+    	const dice = args[1].split('d');
 
-        if (dice[1] == null || dice[2] == null) {
+        if (dice[1] == null) {
         	return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
         }
         const preMod = dice[1].split("+");
@@ -19,8 +20,8 @@ module.exports = {
 			dice.push(preMod[0]);
 		}
 		if (iris.numCheck(dice[0]) && iris.numCheck(dice[1]) && dice.length === 2) {
-
-			iris.Rolls.update({ roll: args[1]}, {where: {
+			// update roll
+			Rolls.update({ roll: args[1]}, {where: {
 				name: rollName,
 				user_id: message.author.id,
 			}})
