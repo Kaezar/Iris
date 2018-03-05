@@ -1,5 +1,5 @@
 const iris = require('../iris.js');
-const Rolls = require('../dbObjects.js');
+const { Rolls } = require('../dbObjects.js');
 var roller = module.exports = {
 	name: 'roll',
 	description: 'Roll dice.',

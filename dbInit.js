@@ -10,6 +10,8 @@ const sequelize = new Sequelize(database, user, password, {
 
 const Rolls = sequelize.import('./Models/Rolls');
 
+const Pats = sequelize.import('./Models/Pats');
+
 const force = process.argv.includes('--force') || process.argv.includes('-f');
 
 sequelize.sync({ force })

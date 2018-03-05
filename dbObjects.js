@@ -10,4 +10,6 @@ const sequelize = new Sequelize(database, user, password, {
 
 const Rolls = sequelize.import('./Models/Rolls');
 
-module.exports = Rolls;
+const Pats = sequelize.import('./Models/Pats');
+
+module.exports = { Rolls, Pats };

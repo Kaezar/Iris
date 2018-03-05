@@ -2,6 +2,7 @@ const Discord = require("discord.js");
 const Sequelize = require("sequelize");
 const Translate = require('@google-cloud/translate');
 const fs = require('fs');
+const pmx = require('pmx');
 const bot = new Discord.Client();
 const source = getSource();
 exports.source = source;
@@ -11,7 +12,6 @@ exports.prefix = prefix;
 // initialize connection to google cloud translation API
 const translate = new Translate();
 exports.translate = translate;
-
 
 // get commands
 bot.commands = new Discord.Collection();
@@ -23,9 +23,9 @@ for (const file of commandFiles) {
     // with the key as the command name and the value as the exported module
     bot.commands.set(command.name, command);
 }
-
 // ready message
 bot.on('ready', () => {
+	//process.send('ready');
 	let activityRoll = rollDice(1, 2);
 	let activity = {
 		type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), 
@@ -55,9 +55,7 @@ bot.on('message', message => {
 
 	const author = message.author;
 
-	const mess = message.content.toLowerCase();
-
-	
+	const mess = message.content.toLowerCase();	
 
 	// politeness
 	if(mess.includes('thanks, iris') || 
@@ -67,21 +65,18 @@ bot.on('message', message => {
 	{
 		message.channel.send(`You're welcome, ${author}`);
 	}
-
 	// greeting
 	if(mess.includes('hello') && mess.includes('iris')) {
 		message.channel.send(`Hello ${author}`);
 	}
-
+	// love
 	if(mess.includes('i love you iris') || mess.includes('i love you, iris')) {
 		message.channel.send(`I love you too ${author}`);
 	}
-
 	// forgiveness
 	if(mess.includes('sorry, iris') || mess.includes('sorry iris')) {
 		message.channel.send(`It's okay ${author}. I forgive you.`);
 	}
-
 	// portal jokes
 	if(mess.includes('portal') || 
 		mess.includes('science') || 
@@ -94,7 +89,6 @@ bot.on('message', message => {
 		const cube = bot.emojis.find('name', 'companioncube');
 		message.react(cube);
 	}
-
 	// responds with user avatar image
 	if(mess.includes('what is my avatar') || 
 		mess.includes("what's my avatar") || 
@@ -103,7 +97,6 @@ bot.on('message', message => {
 		return message.reply(message.author.avatarURL);
 
 	}
-
 	if(mess.includes('what is your avatar iris') || 
 		mess.includes('what is your avatar, iris') || 
 		mess.includes('iris what is your avatar') || 
@@ -111,16 +104,13 @@ bot.on('message', message => {
 	{
 		return message.reply(bot.user.avatarURL);
 	}
-
 	if(mess.includes('bepis')) {
 		const bepis = bot.emojis.find('name', 'BEPIS');
 		message.react(bepis);
 	}
-
 	if(mess.includes('blood for the blood god')) {
 		message.channel.send('Skulls for the skull throne!');
 	}
-
 	if (message.mentions.users.find('username', 'Iris')) {
 		if(mess.includes('thank')) {
 			message.channel.send(`You're welcome, ${author}`);
@@ -147,7 +137,6 @@ bot.on('message', message => {
 			message.channel.send(`Thank you ${author}! I enjoy head pats as a sign of appreciation.`);
 		}
 	}
-
 	// regular expression to test for prefix or @mention
 	const prefixRegex = new RegExp(`^(<@!?${bot.user.id}>|\\${prefix})\\s*`);
 
@@ -232,6 +221,10 @@ function wrap(text) {
 	return '```\n' + text.replace(/`/g, '`' + String.fromCharCode(8203)) + '\n```';
 }
 exports.wrap = wrap;
-
+/*
+pmx.action('heartbeat', (reply) => {
+	reply({ answer: bot.ping });
+});
+*/
 // catch unhandled promise rejections
 process.on('unhandledRejection', error => console.error(`Uncaught Promise Rejection:\n${error}`));
