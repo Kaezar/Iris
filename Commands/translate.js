@@ -1,4 +1,5 @@
 const iris = require('../iris.js');
+const { translateTarget: target } = require('../config.json');
 module.exports = {
     name: 'translate',
     description: 'Translate given text to English.',
@@ -6,7 +7,6 @@ module.exports = {
     usage: '<text phrase>',
     execute(message, args) {
         const text = args.join(" ");
-        const target = "en";
 
         iris.translate.translate(text, target)
         .then(results => {

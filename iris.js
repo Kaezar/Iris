@@ -2,7 +2,6 @@ const Discord = require("discord.js");
 const Sequelize = require("sequelize");
 const Translate = require('@google-cloud/translate');
 const fs = require('fs');
-const pmx = require('pmx');
 const bot = new Discord.Client();
 const source = getSource();
 exports.source = source;
@@ -10,7 +9,7 @@ const { prefix, token, kyleID } = require("./config.json");
 exports.prefix = prefix;
 
 // initialize connection to google cloud translation API
-const translate = new Translate();
+const translate = new Translate({ keyFilename: './service-account.json' });
 exports.translate = translate;
 
 // get commands
@@ -25,7 +24,6 @@ for (const file of commandFiles) {
 }
 // ready message
 bot.on('ready', () => {
-	//process.send('ready');
 	let activityRoll = rollDice(1, 2);
 	let activity = {
 		type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), 
@@ -221,10 +219,6 @@ function wrap(text) {
 	return '```\n' + text.replace(/`/g, '`' + String.fromCharCode(8203)) + '\n```';
 }
 exports.wrap = wrap;
-/*
-pmx.action('heartbeat', (reply) => {
-	reply({ answer: bot.ping });
-});
-*/
+
 // catch unhandled promise rejections
 process.on('unhandledRejection', error => console.error(`Uncaught Promise Rejection:\n${error}`));
