@@ -11,8 +11,6 @@ module.exports = {
 				if (!rowCount) return message.reply('That roll does not exist!');
 				return message.channel.send(iris.wrap(`Deleted roll: ${args[0]}`));
 			})
-			.catch((error) => {
-				console.log(error);
-			});
+			.catch((error) => console.error(error));
     },
 };

@@ -10,8 +10,6 @@ module.exports = {
 		if (!dispatcher.paused) {
 			dispatcher.pause();
 			message.channel.send(iris.wrap("Playback paused."));
-		} else {
-			message.channel.send(iris.wrap("Playback is already paused!"));
-		}
+		} else message.channel.send(iris.wrap("Playback is already paused!"));
     },
 };

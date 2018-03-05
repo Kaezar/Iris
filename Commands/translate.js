@@ -13,8 +13,6 @@ module.exports = {
             let translation = results[0];
             message.channel.send(`Translation: ${translation}`);
         })
-        .catch(err => {
-            console.error('ERROR:', err);
-        });
+        .catch((error) => console.error('ERROR:', error));
     },
 };

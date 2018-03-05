@@ -32,9 +32,7 @@ module.exports = {
 						return message.reply('Could not find roll with that name!');
 					}
 				})
-				.catch((error) => {
-					console.log(error);
-				});
+				.catch((error) => console.error(error));
 		} else {
 			return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
 		}

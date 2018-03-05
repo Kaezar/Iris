@@ -25,7 +25,7 @@ module.exports = {
                 message.channel.send(`This ${gender} has a very normal name, and that name is ${name.body.name} ${name.body.surname}`);
             })
             .catch((error) => {
-                console.log(error);
+                console.error(error);
                 message.reply("Something went wrong with the request!");
             });
     },

@@ -5,11 +5,7 @@ var Cat = module.exports = {
     description: 'Get a cat from the random cat API.',
     execute(message) {
         snekfetch.get('https://random.cat/meow')
-            .then((cat) => {
-                message.channel.send(cat.body.file);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+            .then((cat) => message.channel.send(cat.body.file))
+            .catch((error) => console.error(error));
     },
 };

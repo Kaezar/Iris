@@ -34,7 +34,7 @@ module.exports = {
 						if (error.name === 'SequelizeUniqueConstraintError') {
         					return message.reply('That roll already exists.');
     					}
-    					console.log(error);
+    					console.error(error);
     					return message.reply('Something went wrong with adding the roll.');
 					});
 		} else {

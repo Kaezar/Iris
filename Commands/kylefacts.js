@@ -5,11 +5,7 @@ var Cat = module.exports = {
     description: 'Tell a totally true fact about Kyle.',
     execute(message) {
         snekfetch.get('http://api.icndb.com/jokes/random').query({ firstName: 'Kyle', lastName: 'Drum' })
-            .then((joke) => {
-                message.channel.send(joke.body.value.joke)
-            })
-            .catch((error) => {
-                console.log(error);
-            });
+            .then((joke) => message.channel.send(joke.body.value.joke))
+            .catch((error) => console.error(error));
     },
 };

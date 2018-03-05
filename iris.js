@@ -1,15 +1,14 @@
 const Discord = require("discord.js");
-const ytdl = require("ytdl-core");
 const Sequelize = require("sequelize");
 const Translate = require('@google-cloud/translate');
 const fs = require('fs');
-const { token } = require("./auth.json");
 const bot = new Discord.Client();
 const source = getSource();
 exports.source = source;
-const prefix = '!';
+const { prefix, token, kyleID } = require("./config.json");
 exports.prefix = prefix;
 
+// initialize connection to google cloud translation API
 const translate = new Translate();
 exports.translate = translate;
 
@@ -28,7 +27,10 @@ for (const file of commandFiles) {
 // ready message
 bot.on('ready', () => {
 	let activityRoll = rollDice(1, 2);
-	let activity = {type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), activity: (activityRoll === 1 ? "everything you say" : "you")};
+	let activity = {
+		type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), 
+		activity: (activityRoll === 1 ? "everything you say" : "you")
+	};
 	bot.user.setActivity(activity.activity, { type: activity.type });
 	console.log('I am ready!');
 });
@@ -42,7 +44,10 @@ bot.on('guildCreate', guild => {
 			}
 		}
 	});
-	defaultChannel.send("Hello, my name is Iris, and I'm a bot. Thank you so much for inviting me to your channel! For a list of my commands, type '!help'");
+	defaultChannel.send(`
+		Hello, my name is Iris, and I'm a bot.\n 
+		Thank you so much for inviting me to your channel!\n 
+		For a list of my commands, type '${prefix}help'`);
 });
 // message event handler
 bot.on('message', message => {
@@ -55,7 +60,11 @@ bot.on('message', message => {
 	
 
 	// politeness
-	if(mess.includes('thanks, iris') || mess.includes('thanks iris') || mess.includes('thank you iris') || mess.includes('thank you, iris')) {
+	if(mess.includes('thanks, iris') || 
+		mess.includes('thanks iris') || 
+		mess.includes('thank you iris') || 
+		mess.includes('thank you, iris')) 
+	{
 		message.channel.send(`You're welcome, ${author}`);
 	}
 
@@ -74,18 +83,32 @@ bot.on('message', message => {
 	}
 
 	// portal jokes
-	if(mess.includes('portal') || mess.includes('science') || mess.includes('cake') || mess.includes('testing') || mess.includes('aperture') || mess.includes('glados') || mess.includes('you monster')) {
+	if(mess.includes('portal') || 
+		mess.includes('science') || 
+		mess.includes('cake') || 
+		mess.includes('testing') || 
+		mess.includes('aperture') || 
+		mess.includes('glados') || 
+		mess.includes('you monster')) 
+	{
 		const cube = bot.emojis.find('name', 'companioncube');
 		message.react(cube);
 	}
 
 	// responds with user avatar image
-	if(mess.includes('what is my avatar') || mess.includes("what's my avatar") || mess.includes("what does my avatar look like")) {
+	if(mess.includes('what is my avatar') || 
+		mess.includes("what's my avatar") || 
+		mess.includes("what does my avatar look like")) 
+	{
 		return message.reply(message.author.avatarURL);
 
 	}
 
-	if(mess.includes('what is your avatar iris') || mess.includes('what is your avatar, iris') || mess.includes('iris what is your avatar') || mess.includes('iris, what is your avatar')) {
+	if(mess.includes('what is your avatar iris') || 
+		mess.includes('what is your avatar, iris') || 
+		mess.includes('iris what is your avatar') || 
+		mess.includes('iris, what is your avatar')) 
+	{
 		return message.reply(bot.user.avatarURL);
 	}
 
@@ -125,13 +148,19 @@ bot.on('message', message => {
 		}
 	}
 
+	// regular expression to test for prefix or @mention
+	const prefixRegex = new RegExp(`^(<@!?${bot.user.id}>|\\${prefix})\\s*`);
+
 	// commands
-	if (message.content.startsWith(prefix)) {
-		// args are each word after !
-		let args = message.content.substring(1).split(' ');
-		// cmd is the word immediately following the !
+	if (prefixRegex.test(message.content)) {
+
+		// gets the matched prefix or mention
+    	const [, matchedPrefix] = message.content.match(prefixRegex);
+    	// args is every word in the message except the prefix, separated by whitespace
+    	const args = message.content.slice(matchedPrefix.length).trim().split(/ +/);
+		
+		// cmd is the word immediately following the prefix
 		const cmd = args.shift().toLowerCase();
-		// remove cmd from args
 
 		if (!bot.commands.has(cmd)) return;
 
@@ -142,8 +171,12 @@ bot.on('message', message => {
 		}
 
 		// check permissions
-		if (command.adminOnly && !isAdmin(author)) return message.reply('You don\'t have permission to use that command!');
-		if (command.kyleOnly && message.author.id !== "202228363958550529") return message.reply('Only Kyle has permission to use that command!');
+		if (command.adminOnly && !isAdmin(author)) {
+			return message.reply('You don\'t have permission to use that command!');
+		}
+		if (command.kyleOnly && message.author.id !== kyleID) {
+			return message.reply('Only Kyle has permission to use that command!');
+		}
 
 		if (command.args && !args.length) {
 			let reply = 'You need to provide arguments for that command!';

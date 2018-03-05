@@ -10,8 +10,6 @@ module.exports = {
         		const rollString = rollList.map(t => `${t.user_name}.${t.name}: ${t.roll}`).join('\n') || 'No rolls set.';
         		return message.channel.send(iris.wrap(rollString));
         	})
-        	.catch((error) => {
-				console.log(error);
-			});
+        	.catch((error) => console.error(error));
     },
 };

@@ -13,24 +13,16 @@ var roller = module.exports = {
 				user_id: message.author.id,
 			}})
 				.then((saved) => {
-					if (saved) {
-						roller.parseRoll(message, saved.get('roll'), args[1]);
-					} else {
-						return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
-					}
+					if (saved) roller.parseRoll(message, saved.get('roll'), args[1]);
+					else return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
 				})
-				.catch((error) => {
-					console.log(error);
-				});
-		} else {
-			roller.parseRoll(message, args[0], args[1]);
-		}
+				.catch((error) => console.error(error));
+		} else roller.parseRoll(message, args[0], args[1]);
 	},
 	parseRoll(message, preRoll, adv) {
 		// in the roll formula, dice is an array that contains either x and y, or x and y+mod
 		const dice = preRoll.split("d");
 		
-
 		// In the roll formula, premod is an array that contains either y and mod, or y and undefined (because no mod)
 		const preMod = dice[1].split("+");
 
@@ -49,16 +41,16 @@ var roller = module.exports = {
 		let rolly;
 		let result;
 		// Roll an extra time if adv
-		if(adv != null && adv.toLowerCase() === 'adv') {
-			advRoll = roller.roll(message, dice, mod);
-		}
-		rolly = roller.roll(message, dice, mod);
+		if(adv != null && adv.toLowerCase() === 'adv') advRollReturn = roller.roll(message, dice, mod);
+		rollReturn = roller.roll(message, dice, mod);
+
 		// return the higher of the two rolls if adv, else return roll
-		if (advRoll) {
-			result = ((advRoll > rolly) ? advRoll : rolly);
-		} else result = rolly;
+		if (advRollReturn) result = ((advRollReturn > rollReturn) ? advRollReturn : rollReturn);
+		else result = rollReturn;
+
 		return result;
 	},
+	// call iris' roll dice to get result, add modifier, send result, check for crit
 	roll(message, dice, mod) {
 		let result = iris.rollDice(dice[0], dice[1]);
 		const critCheck = result;
@@ -78,6 +70,7 @@ var roller = module.exports = {
 		}
 		return result;
 	},
+	// check if roll given in arguments is valid dice roll
 	diceCheck(message, args) {
         const dice = args[0].split('d');
 
@@ -91,10 +84,6 @@ var roller = module.exports = {
 			dice.pop();
 			dice.push(preMod[0]);
 		}
-		if (iris.numCheck(dice[0]) && iris.numCheck(dice[1]) && dice.length === 2) {
-			return true;
-		} else {
-			return false;
-		}
+		return (iris.numCheck(dice[0]) && iris.numCheck(dice[1]) && dice.length === 2);
 	},
 };

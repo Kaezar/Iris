@@ -15,7 +15,7 @@ var Cat = module.exports = {
                     })
             })
             .catch((error) => {
-                console.log(error);
+                console.error(error);
                 message.channel.stopTyping(true);
             });
     },
