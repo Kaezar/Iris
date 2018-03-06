@@ -1,5 +1,5 @@
 const iris = require('../iris.js');
-const Rolls = require('../dbObjects.js');
+const { Rolls } = require('../dbObjects.js');
 module.exports = {
     name: 'deleteroll',
     description: 'Delete a custom roll.',

@@ -5,6 +5,7 @@ module.exports = {
     description: 'Translate given text to English.',
     args: true,
     usage: '<text phrase>',
+    cooldown: 10,
     execute(message, args) {
         const text = args.join(" ");
 

@@ -37,8 +37,8 @@ var roller = module.exports = {
 			dice.push(preMod[0]);
 		}
 
-		let advRoll;
-		let rolly;
+		let advRollReturn;
+		let rollReturn;
 		let result;
 		// Roll an extra time if adv
 		if(adv != null && adv.toLowerCase() === 'adv') advRollReturn = roller.roll(message, dice, mod);
