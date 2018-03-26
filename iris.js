@@ -28,12 +28,14 @@ const cooldowns = new Discord.Collection();
 
 // ready message
 bot.on('ready', () => {
+	/*
 	let activityRoll = rollDice(1, 2);
 	let activity = {
 		type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), 
 		activity: (activityRoll === 1 ? "everything you say" : "you")
 	};
-	bot.user.setActivity(activity.activity, { type: activity.type });
+	*/
+	bot.user.setActivity("you", { type: "WATCHING" });
 	console.log('I am ready!');
 });
 // event handler for when bot is added to a guild.
@@ -69,12 +71,13 @@ bot.on('message', message => {
     	// args is every word in the message except the prefix, separated by whitespace
     	const args = message.content.slice(matchedPrefix.length).trim().split(/ +/);
 		
-		// cmd is the word immediately following the prefix
-		const cmd = args.shift().toLowerCase();
+		// commandName is the word immediately following the prefix
+		const commandName = args.shift().toLowerCase();
 
-		if (!bot.commands.has(cmd)) return;
+		const command = bot.commands.get(commandName)
+			|| bot.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
-		const command = bot.commands.get(cmd);
+		if (!command) return;
 
 		if (command.guildOnly && !message.member) {
     		return message.reply('I can\'t execute that command inside DMs!');
@@ -113,7 +116,8 @@ bot.on('message', message => {
 
 		    if (now < expirationTime) {
 		        const timeLeft = (expirationTime - now) / 1000;
-		        return message.reply(`please wait ${timeLeft.toFixed(1)} more second(s) before reusing the \`${command.name}\` command.`);
+		        return message.reply(`please wait ${timeLeft.toFixed(1)} 
+		        more second(s) before reusing the \`${command.name}\` command.`);
 		    }
 
 		    timestamps.set(message.author.id, now);
@@ -173,23 +177,20 @@ function responses(message) {
 	const mess = message.content.toLowerCase();	
 
 	// politeness
-	if(mess.includes('thanks, iris') || 
-		mess.includes('thanks iris') || 
-		mess.includes('thank you iris') || 
-		mess.includes('thank you, iris')) 
+	if(mess.includes('thank') && mess.includes('iris')) 
 	{
 		message.channel.send(`You're welcome, ${author}`);
 	}
 	// greeting
-	if(mess.includes('hello') && mess.includes('iris')) {
+	if((mess.includes('hello') && mess.includes('iris')) || mess.includes('hi iris')) {
 		message.channel.send(`Hello ${author}`);
 	}
 	// love
-	if(mess.includes('i love you iris') || mess.includes('i love you, iris')) {
+	if(mess.includes('i love you') && mess.includes('iris')) {
 		message.channel.send(`I love you too ${author}`);
 	}
 	// forgiveness
-	if(mess.includes('sorry, iris') || mess.includes('sorry iris')) {
+	if(mess.includes('sorry') && mess.includes('iris')) {
 		message.channel.send(`It's okay ${author}. I forgive you.`);
 	}
 	// portal jokes
@@ -198,12 +199,14 @@ function responses(message) {
 		mess.includes('cake') || 
 		mess.includes('testing') || 
 		mess.includes('aperture') || 
+		mess.includes('still alive') || 
 		mess.includes('glados') || 
 		mess.includes('you monster')) 
 	{
 		const cube = bot.emojis.find('name', 'companioncube');
 		message.react(cube);
 	}
+	// bepis
 	if(mess.includes('bepis')) {
 		message.react('🇧')
 		.then(() => message.react('🇪'))
@@ -212,9 +215,11 @@ function responses(message) {
 		.then(() => message.react('🇸'))
 		.catch((error) => console.error(error));
 	}
+	// khorney jokes
 	if(mess.includes('blood for the blood god')) {
-		message.channel.send('💀 Skulls for the skull throne! 💀');
+		message.channel.send('💀 **Skulls for the skull throne!** 💀');
 	}
+	// @mention responses
 	if (message.mentions.users.find('username', 'Iris')) {
 		if(mess.includes('thank')) {
 			message.channel.send(`You're welcome, ${author}`);
@@ -229,9 +234,9 @@ function responses(message) {
 			message.channel.send(`It's okay ${author}. I forgive you.`);
 		}
 		if (mess.includes('your source')) {
-			message.channel.send(getSource(), { code: 'javascript', split: true });
+			message.channel.send(source, { code: 'javascript', split: true });
 		}
-		if (mess.includes('good') && mess.includes('bot')) {
+		if ((mess.includes('bot') || mess.includes('🤖')) && mess.includes('good')) {
 			message.channel.send(`Thank you ${author}! I enjoy head pats as a sign of appreciation.`);
 		}
 	}

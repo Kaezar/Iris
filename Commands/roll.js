@@ -84,6 +84,6 @@ var roller = module.exports = {
 			dice.pop();
 			dice.push(preMod[0]);
 		}
-		return (iris.numCheck(dice[0]) && iris.numCheck(dice[1]) && dice.length === 2);
-	},
+		return (iris.numCheck(dice[0]) && iris.numCheck(dice[1]) && (dice[0] > 0) && (dice[1] > 0) && dice.length === 2);
+	}
 };

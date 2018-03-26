@@ -4,6 +4,7 @@ const Promise = require('bluebird');
 var Cat = module.exports = {
     name: 'joke',
     description: 'Get a joke from the random joke API.',
+    cooldown: 10,
     execute(message) {
         snekfetch.get('https://08ad1pao69.execute-api.us-east-1.amazonaws.com/dev/random_joke')
             .then((joke) => {

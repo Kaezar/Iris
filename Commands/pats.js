@@ -10,17 +10,15 @@ module.exports = {
         	.then((sum) => {
         		let patSum = 0;
         		if (sum) patSum = sum;
-        		reply[0] = `Total pats: ${patSum}`
+        		reply.push(`Total pats: ${patSum}`);
         		Pats.findOne({ where: { user_id: message.author.id } })
         			.then((selected) => {
         				let patCount = 0;
         				if (selected) patCount = selected.get('pat_count');
-        				reply[1] = `Pats from ${message.author.username}: ${patCount}`;
+        				reply.push(`Pats from ${message.author.username}: ${patCount}`);
         				message.channel.send(reply, { code: true } );
         			})
         	})
-        	.catch((error) => console.error(error));
-        
-        
-    },
+        	.catch((error) => console.error(error)); 
+    }
 };

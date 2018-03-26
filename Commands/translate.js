@@ -4,8 +4,8 @@ module.exports = {
     name: 'translate',
     description: 'Translate given text to English.',
     args: true,
-    usage: '<text phrase>',
-    cooldown: 10,
+    usage: '<phrase>',
+    cooldown: 60,
     execute(message, args) {
         const text = args.join(" ");
 
@@ -15,5 +15,5 @@ module.exports = {
             message.channel.send(`Translation: ${translation}`);
         })
         .catch((error) => console.error('ERROR:', error));
-    },
+    }
 };

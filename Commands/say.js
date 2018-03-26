@@ -14,15 +14,17 @@ module.exports = {
 			.then(connection => {
 			// Connection is an instance of VoiceConnection
 
-				// Synchronously execute a child process, which is macOS' say command. Pipes output to file.
-				const execSync = require('child_process').execSync;
-				const command = 'say -v victoria -o ./Audio/sayfile.mp4 ' + '"' + String(phrase) + '"';
-				var child = execSync(command, (error, stdout, stderr) => {if (error) return console.error(stderr)});
-				// Stream file to voice channel
-				const dispatcher = connection.playFile('./Audio/sayfile.mp4');
-				dispatcher.on('error', (error) => console.error(error));
-				// Leave voice channel when done playing
-				dispatcher.on('end', () => message.member.voiceChannel.leave());
+				if (process.platform === 'darwin') {
+					// Synchronously execute a child process, which is macOS' say command. Pipes output to file.
+					const execSync = require('child_process').execSync;
+					const command = 'say -v samantha -o ./Files/Audio/sayfile.mp4 ' + '"' + String(phrase) + '"';
+					var child = execSync(command, (error, stdout, stderr) => {if (error) return console.error(stderr)});
+					// Stream file to voice channel
+					const dispatcher = connection.playFile('./Files/Audio/sayfile.mp4');
+					dispatcher.on('error', (error) => console.error(error));
+					// Leave voice channel when done playing
+					dispatcher.on('end', () => message.member.voiceChannel.leave());
+				}
 			})
 			.catch(console.log);
     },

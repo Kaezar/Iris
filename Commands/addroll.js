@@ -28,7 +28,7 @@ module.exports = {
 					user_id: message.author.id,
 				})
 					.then(() => {
-						return message.channel.send(iris.wrap(`Added ${rollName}: ${args[1]}`));
+						return message.channel.send(`Added ${rollName}: ${args[1]}`, { code: true });
 					})
 					.catch((error) => {
 						if (error.name === 'SequelizeUniqueConstraintError') {
@@ -40,5 +40,5 @@ module.exports = {
 		} else {
 			return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
 		}
-    },
+    }
 };

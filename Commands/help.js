@@ -7,7 +7,9 @@ module.exports = {
     	const { commands } = message.client;
 		const data = [];
     	const prefix = iris.prefix;
+        const navi = message.client.emojis.find('name', 'navi');
         if (!args.length) {
+            data.push(`${navi} Hey! Listen! ${navi}`);
         	data.push('Here\'s a list of all my commands:');
 			data.push(iris.wrap(commands.map(command => command.name).join(', ')));
 			data.push(`You can send \`${prefix}help <command>\` to get info on a specific command!`);
@@ -29,5 +31,5 @@ module.exports = {
 		        if (message.channel.type !== 'dm') message.reply('I\'ve sent you a DM with all my commands!');
 		    })
 		    .catch(() => message.reply('it seems like I can\'t DM you!'));
-    },
+    }
 };
