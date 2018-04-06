@@ -14,9 +14,9 @@ exports.translate = translate;
 
 // get commands
 bot.commands = new Discord.Collection();
-const commandFiles = fs.readdirSync('./commands');
+const commandFiles = fs.readdirSync('./Commands');
 for (const file of commandFiles) {
-    const command = require(`./commands/${file}`);
+    const command = require(`./Commands/${file}`);
 
     // set a new item in the Collection
     // with the key as the command name and the value as the exported module
@@ -31,7 +31,7 @@ bot.on('ready', () => {
 	/*
 	let activityRoll = rollDice(1, 2);
 	let activity = {
-		type: (activityRoll === 1 ? "LISTENING" : "WATCHING"), 
+		type: (activityRoll === 1 ? "LISTENING" : "WATCHING"),
 		activity: (activityRoll === 1 ? "everything you say" : "you")
 	};
 	*/
@@ -49,8 +49,8 @@ bot.on('guildCreate', guild => {
 		}
 	});
 	defaultChannel.send(`
-		Hello, my name is Iris, and I'm a bot.\n 
-		Thank you so much for inviting me to your channel!\n 
+		Hello, my name is Iris, and I'm a bot.\n
+		Thank you so much for inviting me to your channel!\n
 		For a list of my commands, type '${prefix}help'`);
 });
 // message event handler
@@ -59,7 +59,7 @@ bot.on('message', message => {
 	const author = message.author;
 
 	responses(message);
-	
+
 	// regular expression to test for prefix or @mention
 	const prefixRegex = new RegExp(`^(<@!?${bot.user}>|\\${prefix})\\s*`);
 
@@ -70,7 +70,7 @@ bot.on('message', message => {
     	const [, matchedPrefix] = message.content.match(prefixRegex);
     	// args is every word in the message except the prefix, separated by whitespace
     	const args = message.content.slice(matchedPrefix.length).trim().split(/ +/);
-		
+
 		// commandName is the word immediately following the prefix
 		const commandName = args.shift().toLowerCase();
 
@@ -97,7 +97,7 @@ bot.on('message', message => {
 				reply += `\nThe proper usage would be: \`${prefix}${command.name} ${command.usage}\``;
 			}
 			return message.reply(reply);
-		} 
+		}
 
 		if (!cooldowns.has(command.name)) {
 		    cooldowns.set(command.name, new Discord.Collection());
@@ -116,7 +116,7 @@ bot.on('message', message => {
 
 		    if (now < expirationTime) {
 		        const timeLeft = (expirationTime - now) / 1000;
-		        return message.reply(`please wait ${timeLeft.toFixed(1)} 
+		        return message.reply(`please wait ${timeLeft.toFixed(1)}
 		        more second(s) before reusing the \`${command.name}\` command.`);
 		    }
 
@@ -150,7 +150,12 @@ function getSource() {
 function isAdmin(member) {
 	return member.hasPermission("ADMINISTRATOR", { checkAdmin: true });
 }
-
+/**
+ * Simulate the rolling of a number of dice with a number of sides
+ * @param  {number} count The number of dice to roll
+ * @param  {number} sides The number of sides on the dice
+ * @return {number}       The total result of all dice rolled
+ */
 function rollDice(count, sides) {
 	let result = 0;
 	for(let i = 0; i < count; i++) {
@@ -170,14 +175,17 @@ function wrap(text) {
 	return '```\n' + text.replace(/`/g, '`' + String.fromCharCode(8203)) + '\n```';
 }
 exports.wrap = wrap;
-
+/**
+ * Function to handle automatic message responses
+ * @param  {message} message The message to respond to
+ */
 function responses(message) {
 	const author = message.author;
 
-	const mess = message.content.toLowerCase();	
+	const mess = message.content.toLowerCase();
 
 	// politeness
-	if(mess.includes('thank') && mess.includes('iris')) 
+	if(mess.includes('thank') && mess.includes('iris'))
 	{
 		message.channel.send(`You're welcome, ${author}`);
 	}
@@ -194,14 +202,14 @@ function responses(message) {
 		message.channel.send(`It's okay ${author}. I forgive you.`);
 	}
 	// portal jokes
-	if(mess.includes('portal') || 
-		mess.includes('science') || 
-		mess.includes('cake') || 
-		mess.includes('testing') || 
-		mess.includes('aperture') || 
-		mess.includes('still alive') || 
-		mess.includes('glados') || 
-		mess.includes('you monster')) 
+	if(mess.includes('portal') ||
+		mess.includes('science') ||
+		mess.includes('cake') ||
+		mess.includes('testing') ||
+		mess.includes('aperture') ||
+		mess.includes('still alive') ||
+		mess.includes('glados') ||
+		mess.includes('you monster'))
 	{
 		const cube = bot.emojis.find('name', 'companioncube');
 		message.react(cube);
