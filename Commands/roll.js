@@ -75,7 +75,7 @@ var roller = module.exports = {
 	/**
 	* Call {@link rollDice} to get result, add modifier, send the result, and check
 	* for a critical hit (roll of 20 on a single 20-sided die)
-	* @param  {[type]} message [description]
+	* @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
 	* @param  {string[]} dice    the number of dice and number of sides on the dice
 	* @param  {string} mod     number to add to the result (or empty string)
 	* @return {number}         return value from {@link rollDice} plus the modifier if applicable
