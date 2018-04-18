@@ -7,7 +7,7 @@ const sequelize = new Sequelize(database, user, password, {
 	logging: false,
 	operatorsAliases: false,
 	charset: 'utf8mb4',
-    collate: 'utf8mb4_unicode_ci', 
+	collate: 'utf8mb4_unicode_ci',
 });
 
 const Rolls = sequelize.import('./Models/Rolls');

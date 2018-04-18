@@ -4,5 +4,6 @@
 	"database": "YOUR_DATABASE_NAME",
 	"user": "YOUR_DBMS_USERNAME",
 	"password": "YOUR_DBMS_PASSWORD",
-	"kyleID": "YOUR_DISCORD_ID"
+	"kyleID": "YOUR_DISCORD_ID",
+	"translateTarget": "YOUR_LANGUAGE"
 }
