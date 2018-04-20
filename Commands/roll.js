@@ -114,7 +114,7 @@ var roller = module.exports = {
 	},
 	/**
 	* Check if the string given in args is of the format <x>d<y>+<mod>, where <x>, <y>, and <mod> are numbers.
-	* +<mod> is not necessary.
+	* +<mod> is not required.
 	* @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
 	* @param  {string[]} args    Array of words following the command
 	* @return {boolean}        True if condition stated in description is true.
