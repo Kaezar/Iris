@@ -10,7 +10,6 @@ module.exports = {
     /**
     * List rolls in the roll table of the database that match the user.
     * @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
-    * @param  {string[]} args    Array of words following the command
     */
     execute(message) {
         Rolls.findAll({

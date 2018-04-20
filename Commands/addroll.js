@@ -11,13 +11,14 @@ var addroll = module.exports = {
     args: true,
     usage: '<name> <x>d<y>+<mod> (+mod optional)',
     /**
-    * Check to make sure that input is a valid dice roll, and if so, adds it to the database for later use with {@link module:Commands/roll roll}
+    * Check to make sure that input is a valid dice roll with {@link module:Commands/roll.diceCheck}.
+    * If so, adds it to the database for later use with {@link module:Commands/roll}
     * @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
-    * @param  {string[]} args    Array of words following the command
+    * @param  {string[]} args    Should be the name to give the roll, and the roll formula
     */
     execute(message, args) {
         const [ rollName, rollString ] = args;
-        
+
         if (!rollCommand.diceCheck(rollString)) {
             return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
         }
