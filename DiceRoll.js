@@ -1,4 +1,8 @@
-class DiceRoll {
+/**
+ * DiceRoll class
+ * @module DiceRoll
+ */
+module.exports = class DiceRoll {
     constructor(count, sides, mod) {
         this.count = count;
         this.sides = sides;
@@ -10,7 +14,7 @@ class DiceRoll {
 			result += Math.floor(Math.random() * this.sides) + 1;
 		}
         if (this.mod) {
-            result += mod;
+            result += this.mod;
         }
 		return result;
     }

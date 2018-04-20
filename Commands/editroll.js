@@ -4,6 +4,7 @@
 */
 const iris = require('../iris.js');
 const { Rolls } = require('../dbObjects.js');
+const rollCommand = require('./roll.js');
 var editRoll = module.exports = {
     name: 'editroll',
     description: 'Edit a custom roll.',
@@ -15,35 +16,23 @@ var editRoll = module.exports = {
     * @param  {string[]} args    Array of words following the command
     */
     execute(message, args) {
-        const rollName = args[0];
-        const dice = args[1].split('d');
+        const [ rollName, rollString ] = args;
 
-        if (dice[1] == null) {
+        if (!rollCommand.diceCheck(rollString)) {
             return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
         }
-        const preMod = dice[1].split("+");
-        let mod;
-        if(iris.numCheck(preMod[1])) {
-            mod = preMod[1];
-            dice.pop();
-            dice.push(preMod[0]);
-        }
-        if (iris.numCheck(dice[0]) && iris.numCheck(dice[1]) && dice.length === 2) {
-            // update roll
-            Rolls.update({ roll: args[1]}, {where: {
-                name: rollName,
-                user_id: message.author.id,
-            }})
-            .then((affectedRows) => {
-                if (affectedRows > 0) {
-                    return message.channel.send(iris.wrap(`Updated ${rollName} with new value: ${args[1]}`));
-                } else {
-                    return message.reply('Could not find roll with that name!');
-                }
-            })
-            .catch((error) => console.error(error));
-        } else {
-            return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
-        }
+        // update roll
+        Rolls.update({ roll: rollString}, {where: {
+            name: rollName,
+            user_id: message.author.id,
+        }})
+        .then((affectedRows) => {
+            if (affectedRows > 0) {
+                return message.channel.send(iris.wrap(`Updated ${rollName} with new value: ${rollString}`));
+            } else {
+                return message.reply('Could not find roll with that name!');
+            }
+        })
+        .catch((error) => console.error(error));
     },
 };

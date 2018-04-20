@@ -4,46 +4,61 @@
 */
 const iris = require('../iris.js');
 const { Rolls } = require('../dbObjects.js');
+const DiceRoll = require('../DiceRoll.js');
 var roller = module.exports = {
 	name: 'roll',
 	description: 'Roll dice.',
 	args: true,
 	usage: '<x>d<y>+<mod> adv (+<mod> and adv optional) or <saved roll name> adv (adv optional)',
 	/**
-	* If the roll provided in the first argument is a valid dice roll as checked by {@link diceCheck},
-	* call {@link parseRoll} on the argument. Else, check the rolls table of the database for a
-	* roll with a name matching the argument with the same user ID. If so, call {@link parseRoll}
-	* on that record's dice roll. Pass the second argument to either call.
+	* Check if args[0] (rollString) is a valid dice roll (formula xdy+m). If not, query
+	* the database for a roll with a name matching rollString and the author's user ID. If a
+	* roll is found, call {@link parseRoll} on the saved rollString. If no roll is found,
+	* improper syntax has been used for the rollString or the user is trying to use a roll that
+	* does not exist. Either way, send a message telling them what went wrong. If rollString
+	* is a valid dice roll, call {@link parseRoll} on it. Either result of {@link parseRoll} is
+	* then destructured and used to construct a new DiceRoll object. call DiceRoll's {@link module:DiceRoll.roll}
+	* method and {@link sendResult} once, or twice if args[1] == 'adv' (not case sensitive).
 	* @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
-	* @param  {string[]} args    Array of words following the command
+	* @param  {string[]} args    args[0] should either be a name of a roll in the DB, or a roll calculation. args[1] is adv.
 	*/
-	execute(message, args) {
-		check = roller.diceCheck(message, args);
+	async execute(message, args) {
+		const [rollString, adv] = args;
+		check = roller.diceCheck(rollString);
+		let parsedRoll;
 		if (!check) {
-			Rolls.findOne({ where: {
-				name: args[0],
+			let saved = await Rolls.findOne({ where: {
+				name: rollString,
 				user_id: message.author.id,
-			}})
-			.then((saved) => {
-				if (saved) roller.parseRoll(message, saved.get('roll'), args[1]);
-				else return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional)!');
-			})
-			.catch((error) => console.error(error));
-		} else roller.parseRoll(message, args[0], args[1]);
+			}});
+			if (saved) parsedRoll = roller.parseRoll(saved.get('roll'));
+			else return message.reply('You need to give a valid dice roll of the form <x>d<y>+<mod> (+mod optional), or the name of a saved roll!');
+		} else parsedRoll = roller.parseRoll(rollString);
+
+		const { count, sides, mod } = parsedRoll;
+
+		let diceRoll = new DiceRoll(count, sides, mod);
+
+		// Roll an extra time if adv
+		if(adv != null && adv.toLowerCase() === 'adv') {
+			const advRollResult = diceRoll.roll();
+			roller.sendResult(message, diceRoll, advRollResult);
+		}
+		const rollResult = diceRoll.roll();
+		roller.sendResult(message, diceRoll, rollResult);
 	},
 	/**
-	* Split the dice roll string up into the number of dice, number of sides
-	* on each, and the modifier to add at the end (if applicable). Call
-	* {@link roll} once, or twice if adv is "adv".
+	* Split the dice roll string up into the number of dice (count), number of sides
+	* on each (sides), and the modifier to add at the end (if applicable, mod). Return
+	* the three values in an object.
 	* @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
-	* @param  {string} preRoll The string of form <x>d<y>+<mod>, where <x>, <y>, and <mod> are numbers.
-	* @param  {string} adv     The second argument from "args" in {@link execute}.
-	* @return {number}         The return value of {@link roll}, or the higher of both return values if adv is "adv"
+	* @param  {string} rollString The string of form <x>d<y>+<mod>, where <x>, <y>, and <mod> are numbers.
+	* @return {object}         count, sides, and mod
 	*
 	*/
-	parseRoll(message, preRoll, adv) {
+	parseRoll(rollString) {
 		// in the roll formula, dice is an array that contains either x and y, or x and y+mod
-		const dice = preRoll.split("d");
+		const dice = rollString.split("d");
 
 		// In the roll formula, premod is an array that contains either y and mod, or y and undefined (because no mod)
 		const preMod = dice[1].split("+");
@@ -55,72 +70,24 @@ var roller = module.exports = {
 		let mod;
 		if(iris.numCheck(preMod[1])) {
 			mod = preMod[1];
+			mod = Number(mod);
 			dice.pop();
 			dice.push(preMod[0]);
 		}
+		numDice = dice.map(Number);
 
-		let advRollReturn;
-		let rollReturn;
-		let result;
-		// Roll an extra time if adv
-		if(adv != null && adv.toLowerCase() === 'adv') advRollReturn = roller.roll(message, dice, mod);
-		rollReturn = roller.roll(message, dice, mod);
+		const countSidesMod = {count: numDice[0], sides: numDice[1], mod: mod}
 
-		// return the higher of the two rolls if adv, else return roll
-		if (advRollReturn) result = ((advRollReturn > rollReturn) ? advRollReturn : rollReturn);
-		else result = rollReturn;
-
-		return result;
+		return countSidesMod;
 	},
 	/**
-	* Call {@link rollDice} to get result, add modifier, send the result, and check
-	* for a critical hit (roll of 20 on a single 20-sided die)
-	* @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
-	* @param  {string[]} dice    the number of dice and number of sides on the dice
-	* @param  {string} mod     number to add to the result (or empty string)
-	* @return {number}         return value from {@link rollDice} plus the modifier if applicable
-	*/
-	roll(message, dice, mod) {
-		let result = roller.rollDice(dice[0], dice[1]);
-		const critCheck = result;
-
-		// If there is a mod, make absolutely sure mod and result are numbers, and then add them together
-		if(mod) {
-			result = Number(result);
-			mod = Number(mod);
-			result += mod;
-		}
-
-		message.channel.send(iris.wrap(String(result)));
-		// If roll is 1d20 and result (sans mod) is 20, send congratulatory message
-		if (dice[0] == 1 && dice[1] == 20 && critCheck == 20) {
-			const nat20 = message.client.emojis.find('name', 'nat20');
-			message.channel.send(`Natural 20! ${nat20}`);
-		}
-		return result;
-	},
-	/**
-	* Simulate the rolling of a number of dice with a number of sides
-	* @param  {number|string} count The number of dice to roll
-	* @param  {number|string} sides The number of sides on the dice
-	* @return {number}       The total result of all dice rolled
-	*/
-	rollDice(count, sides) {
-		let result = 0;
-		for(let i = 0; i < count; i++) {
-			result += Math.floor(Math.random() * sides) + 1;
-		}
-		return result;
-	},
-	/**
-	* Check if the string given in args is of the format <x>d<y>+<mod>, where <x>, <y>, and <mod> are numbers.
+	* Check if rollString is of the format <x>d<y>+<mod>, where <x>, <y>, and <mod> are numbers.
 	* +<mod> is not required.
-	* @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
-	* @param  {string[]} args    Array of words following the command
+	* @param  {string[]} rollString    String to check
 	* @return {boolean}        True if condition stated in description is true.
 	*/
-	diceCheck(message, args) {
-		const dice = args[0].split('d');
+	diceCheck(rollString) {
+		const dice = rollString.split('d');
 
 		if (dice[1] == null) {
 			return false;
@@ -132,6 +99,33 @@ var roller = module.exports = {
 			dice.pop();
 			dice.push(preMod[0]);
 		}
-		return (iris.numCheck(dice[0]) && iris.numCheck(dice[1]) && (dice[0] > 0) && (dice[1] > 0) && dice.length === 2);
+		const [ count, sides ] = dice;
+		return (iris.numCheck(count) && iris.numCheck(sides) && (count > 0) && (sides > 0) && dice.length === 2);
+	},
+	/**
+	 * Check to see if the result of a certain {@link module:DiceRoll}
+	 * is a critical hit. A critical hit must be 1d20 (count: 1, sides: 20)
+	 * and have rolled the maximum possible value not counting mod (20).
+	 * @param  {DiceRoll} diceRoll {@link module:DiceRoll}
+	 * @param  {number} result   The result of {@link module:DiceRoll.roll}
+	 * @return {boolean}         See function description
+	 */
+	critCheck(diceRoll, result) {
+		return (diceRoll.count == 1 && diceRoll.sides == 20 && (result == (diceRoll.sides + diceRoll.mod)));
+	},
+	/**
+	 * Send the result of {@link module:DiceRoll.roll} to the channel.
+	 * Also call {@link critCheck}, and if it returns true, send a congratulatory
+	 * message to the channel as well.
+	 * @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
+	 * @param  {DiceRoll} diceRoll {@link module:DiceRoll}
+	 * @param  {number} result   The result of {@link module:DiceRoll.roll}
+	 */
+	sendResult(message, diceRoll, result) {
+		message.channel.send(iris.wrap(String(result)));
+		if (roller.critCheck(diceRoll, result)) {
+			const nat20 = message.client.emojis.find('name', 'nat20');
+			message.channel.send(`Natural 20! ${nat20}`);
+		}
 	}
 };

@@ -15,10 +15,11 @@ var deleteRoll = module.exports = {
     * @param  {string[]} args    Array of words following the command
     */
     execute(message, args) {
-        Rolls.destroy({ where: { name: args[0] } })
+        const rollName = args[0];
+        Rolls.destroy({ where: { name: rollName } })
         .then((rowCount) => {
             if (!rowCount) return message.reply('That roll does not exist!');
-            return message.channel.send(iris.wrap(`Deleted roll: ${args[0]}`));
+            return message.channel.send(iris.wrap(`Deleted roll: ${rollName}`));
         })
         .catch((error) => console.error(error));
     },
