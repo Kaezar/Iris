@@ -1,11 +1,11 @@
 /**
 * List all rolls command
-* @module Commands/listrolls*
+* @module Commands/listallrolls
 */
 const iris = require('../iris.js');
 const { Rolls } = require('../dbObjects.js');
 module.exports = {
-    name: 'listrolls*',
+    name: 'listallrolls',
     description: 'Lists all custom rolls for every user.',
     kyleOnly: true,
     /**
