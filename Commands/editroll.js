@@ -10,6 +10,7 @@ var editRoll = module.exports = {
     description: 'Edit a custom roll.',
     args: true,
     usage: '<name> <x>d<y>+<mod> (+mod optional)',
+    aliases: ['changeroll'],
     /**
     * Change dice roll data in rolls database for the provided roll name.
     * @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command

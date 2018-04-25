@@ -11,6 +11,7 @@ var Urban = module.exports = {
     description: 'Find definition of term from Urban Dictionary.',
     args: true,
     usage: '<term>',
+    aliases: ['define'],
     /**
     * Use {@link https://snekfetch.js.org/ snekfetch} to find a definition for the word or phrase
     * given in args from {@link https://api.urbandictionary.com}. Create a {@link https://discord.js.org/#/docs/main/stable/class/RichEmbed RichEmbed}

@@ -1,7 +1,6 @@
 // import dependencies
 const Discord = require("discord.js");
 const Sequelize = require("sequelize");
-const Translate = require('@google-cloud/translate');
 const fs = require('fs');
 
 // instantiate the client, call getSource, and retrieve variables from config file
@@ -11,11 +10,8 @@ exports.source = source;
 const { prefix, token, kyleID } = require("./config.json");
 exports.prefix = prefix;
 
-// initialize connection to google cloud translation API
-const translate = new Translate({ keyFilename: './service-account.json' });
-exports.translate = translate;
-
 // get commands
+// Discord's Collection class is an extension of Javascript's Map.
 bot.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./Commands');
 for (const file of commandFiles) {
@@ -27,6 +23,8 @@ for (const file of commandFiles) {
 }
 
 // create cooldowns Collection
+// the Collection is an associative array, like a map, and it will
+// hold associative arrays inside it.
 const cooldowns = new Discord.Collection();
 
 // ready message
@@ -58,16 +56,11 @@ bot.on('message', message => {
 
     responses(message);
 
-    // regular expression to test for prefix or @mention
-    const prefixRegex = new RegExp(`^(<@!?${bot.user}>|\\${prefix})\\s*`);
-
     // commands
-    if (prefixRegex.test(message.content)) {
+    if (message.content.startsWith(prefix)) {
 
-        // gets the matched prefix or mention
-        const [, matchedPrefix] = message.content.match(prefixRegex);
         // args is every word in the message except the prefix, separated by whitespace
-        const args = message.content.slice(matchedPrefix.length).trim().split(/ +/);
+        const args = message.content.slice(prefix.length).split(/ +/);
 
         // commandName is the word immediately following the prefix
         const commandName = args.shift().toLowerCase();
@@ -78,17 +71,18 @@ bot.on('message', message => {
         if (!command) return;
 
         if (command.guildOnly && !message.member) {
-            return message.reply('I can\'t execute that command inside DMs!');
+            return message.reply("I can't execute that command inside DMs!");
         }
 
         // check permissions
         if (command.adminOnly && !isAdmin(author)) {
-            return message.reply('You don\'t have permission to use that command!');
+            return message.reply("You don't have permission to use that command!");
         }
         if (command.kyleOnly && message.author.id !== kyleID) {
             return message.reply('Only Kyle has permission to use that command!');
         }
 
+        // check for arguments if required
         if (command.args && !args.length) {
             let reply = 'You need to provide arguments for that command!';
             if (command.usage) {
@@ -97,6 +91,7 @@ bot.on('message', message => {
             return message.reply(reply);
         }
 
+        // add command to cooldown collection if it isn't already in it
         if (!cooldowns.has(command.name)) {
             cooldowns.set(command.name, new Discord.Collection());
         }
@@ -125,7 +120,7 @@ bot.on('message', message => {
         try {
             command.execute(message, args);
         }
-        catch (error) {
+        catch(error) {
             console.error(error);
             message.reply('there was an error trying to execute that command!');
         }

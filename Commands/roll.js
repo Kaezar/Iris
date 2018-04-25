@@ -122,7 +122,7 @@ var roller = module.exports = {
 	 * @param  {number} result   The result of {@link module:DiceRoll.roll}
 	 */
 	sendResult(message, diceRoll, result) {
-		message.channel.send(iris.wrap(String(result)));
+		message.channel.send(result, { code: true });
 		if (roller.critCheck(diceRoll, result)) {
 			const nat20 = message.client.emojis.find('name', 'nat20');
 			message.channel.send(`Natural 20! ${nat20}`);
