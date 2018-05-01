@@ -246,6 +246,9 @@ function responses(message) {
         if ((mess.includes('bot') || mess.includes('🤖')) && mess.includes('good')) {
             message.channel.send(`Thank you ${author}! I enjoy head pats as a sign of appreciation.`);
         }
+        if (mess.includes('what big eye you have')) {
+            message.channel.send(`All the better to watch you with ${author}.`);
+        }
     }
 }
 
