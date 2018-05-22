@@ -51,8 +51,10 @@ bot.on('guildCreate', guild => {
 
 // message event handler
 bot.on('message', message => {
+    // do not respond to messages from self (infinite loops are bad)
     if(message.author === bot.user) return;
     const author = message.author;
+    const member = message.member;
 
     responses(message);
 
@@ -65,6 +67,7 @@ bot.on('message', message => {
         // commandName is the word immediately following the prefix
         const commandName = args.shift().toLowerCase();
 
+        // find the command with matching name or alias
         const command = bot.commands.get(commandName)
         || bot.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
 
@@ -75,7 +78,7 @@ bot.on('message', message => {
         }
 
         // check permissions
-        if (command.adminOnly && !isAdmin(author)) {
+        if (command.adminOnly && !isAdmin(member)) {
             return message.reply("You don't have permission to use that command!");
         }
         if (command.kyleOnly && message.author.id !== kyleID) {
@@ -96,15 +99,18 @@ bot.on('message', message => {
             cooldowns.set(command.name, new Discord.Collection());
         }
 
+        // get current timestamp and the collection of timestamps for the command
         const now = Date.now();
         const timestamps = cooldowns.get(command.name);
+        // set cooldown to the one listed in the command, or 3 seconds
         const cooldownAmount = (command.cooldown || 3) * 1000;
 
+        // if the author does not have this command on cooldown, add them to the collection
         if (!timestamps.has(author.id)) {
             timestamps.set(author.id, now);
             setTimeout(() => timestamps.delete(author.id), cooldownAmount);
-        }
-        else {
+        } else {
+            // expiration time is how long the author has until they can use the command again
             const expirationTime = timestamps.get(author.id) + cooldownAmount;
 
             if (now < expirationTime) {
@@ -112,14 +118,17 @@ bot.on('message', message => {
                 return message.reply(`please wait ${timeLeft.toFixed(1)}
                 more second(s) before reusing the \`${command.name}\` command.`);
             }
-
+            // this shouldn't be reached if the app is functioning properly, but setTimeout can
+            // be unreliable at times, so it's here just in case it doesn't delete the timestamp
+            // when the cooldown expires.
             timestamps.set(message.author.id, now);
             setTimeout(() => timestamps.delete(author.id), cooldownAmount);
         }
-
+        // execute command
         try {
             command.execute(message, args);
         }
+        // catch any errors that occur
         catch(error) {
             console.error(error);
             message.reply('there was an error trying to execute that command!');
@@ -154,7 +163,8 @@ function isAdmin(member) {
 }
 
 /**
-* Check if suspect is a number
+* Check if suspect is a number, meant for use with strings, which could be empty.
+* It would be overkill, otherwise, as !isNaN() would be sufficient.
 * @param  {string} suspect Thing to check
 * @return {boolean}         True if number, else false
 */
@@ -239,9 +249,6 @@ function responses(message) {
         }
         if (mess.includes('sorry')) {
             message.channel.send(`It's okay ${author}. I forgive you.`);
-        }
-        if (mess.includes('your source')) {
-            message.channel.send(source, { code: 'javascript', split: true });
         }
         if ((mess.includes('bot') || mess.includes('🤖')) && mess.includes('good')) {
             message.channel.send(`Thank you ${author}! I enjoy head pats as a sign of appreciation.`);

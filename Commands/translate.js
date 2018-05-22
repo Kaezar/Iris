@@ -3,12 +3,12 @@
 * @module Commands/translate
 */
 const iris = require('../iris.js');
-const { translateTarget: target } = require('../config.json');
+const { translateTargetCode: target, translateTargetName: languageName } = require('../config.json');
 const Translate = require('@google-cloud/translate');
 const translate = new Translate({ keyFilename: './service-account.json' });
 module.exports = {
     name: 'translate',
-    description: 'Translate given text to English.',
+    description: `Translate given text to ${languageName}.`,
     args: true,
     usage: '<phrase>',
     cooldown: 60,

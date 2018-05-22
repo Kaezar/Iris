@@ -8,7 +8,7 @@
     "@google-cloud/translate": "^1.1.0",
     "bufferutil": "^3.0.4",
     "discord.js": "^11.3.2",
-    "ffmpeg-binaries": "^3.2.2",
+    "ffmpeg-binaries": "^3.2.2-3",
     "libsodium": "^0.7.3",
     "mysql2": "^1.5.2",
     "node-opus": "^0.2.7",
