@@ -1,5 +1,6 @@
 # Iris
 <img src="./Files/Iris_Avatar_Square.png" width="256" height="256">
+
 ## Description
 This project is a bot application for the [Discord](https://discordapp.com/) chat platform. The goal of this project is to make an interactive bot which is both useful and enjoyable for users to interact with. Core functions of the bot include but are not limited to: scripted responses to certain messages, simulated dice rolling, saving user-defined dice rolls for ease of use, playing music in voice channels, translating phrases to English, and connecting to various web-based APIs to retrieve information, pictures, trivia, and the like.
 
