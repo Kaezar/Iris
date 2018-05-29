@@ -28,7 +28,7 @@ module.exports = {
             if (fileName.includes('../')) {
                 const boi = message.client.emojis.find('name', 'boi')
                 await message.react(boi);
-                return message.reply("You can't enter the parent directory, asshole!");
+                return message.reply("You can't enter the parent directory!");
             }
 
             if (fs.existsSync('./Files/Audio/' + String(args[0]))) {

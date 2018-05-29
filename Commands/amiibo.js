@@ -22,8 +22,11 @@ var amiibo = module.exports = {
         if (args[0] == 'list') {
             snekfetch.get('http://www.amiiboapi.com/api/amiibo/')
             .then((reply) => {
+                // Make an array of the amiibo names from the reply
                 const amiibos = reply.body.amiibo.map(a => a.name);
+                // Separate out the unique names
                 const uniqueAmiibos = this.unique(amiibos).join(', ');
+                // Send the list of unique amiibo names, each separated by a comma
                 message.author.send(`List of amiibo names: ${uniqueAmiibos}`, { split: { char: ',' } })
                 .then(() => {
                     if (message.channel.type !== 'dm') message.reply("I've sent you a list of all the amiibos!");

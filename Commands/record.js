@@ -5,7 +5,7 @@ var recorder = module.exports = {
     guildOnly: true,
     kyleOnly: true,
     /**
-    * [execute description]
+    * Don't use this command. Trust me.
     * @param  {Message} message The {@link https://discord.js.org/#/docs/main/stable/class/Message message} containing the command
     * @param  {string[]} args    Array of words following the command
     */
