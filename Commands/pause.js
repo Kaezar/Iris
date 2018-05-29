@@ -13,7 +13,7 @@ module.exports = {
     * @param  {string[]} args    Array of words following the command
     */
     execute(message, args) {
-        const voiceConnection = iris.bot.voiceConnections.find(val => val.channel.guild.id === message.guild.id);
+        const voiceConnection = message.client.voiceConnections.find(val => val.channel.guild.id === message.guild.id);
         if (voiceConnection === null) return message.reply("I have to be playing something to pause it, dummy!");
         const dispatcher = voiceConnection.dispatcher;
         if (!dispatcher.paused) {
