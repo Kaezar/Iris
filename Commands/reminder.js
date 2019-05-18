@@ -26,6 +26,6 @@ module.exports = {
         if (targetChannel.type !== 'text') return message.reply('The channel must be a guild text channel!');
 
         message.delete();
-        return targetChannel.send(`Reminder: Game tonight starts at ${time}. I hope to "see" you all there!`);
+        return targetChannel.send(`Reminder: Game starts at ${time}. I hope to "see" you all there!`);
     },
 };
